@@ -1,5 +1,4 @@
-﻿using System.Data;
-using ClosedXML.Excel;
+﻿using ClosedXML.Excel;
 
 namespace ExcelDataSerializer;
 
@@ -17,18 +16,26 @@ public class Loader
             if(range == null)
                 continue;
 
-            var dataTable = CreateDataTable(range);
+            var dataTable = CreateDataTable(sheetName, range);
+            if (dataTable == null) continue;
+
             dataTable.PrintHeader();
             dataTable.PrintData();
+            
+            CodeGenerator.GenerateDataClass(dataTable);
         }
     }
 
-    private Info.DataTable CreateDataTable(IXLRange range)
+    private Info.DataTable? CreateDataTable(string name, IXLRange range)
     {
+        if (string.IsNullOrWhiteSpace(name))
+            return null;
+
         var headerRow = CreateHeaderRow(range.FirstRow());
         var validColumnIndices = headerRow.HeaderCells.Select(cell => cell.Index);
         var result = new Info.DataTable
         {
+            Name = name,
             Header = headerRow,
             Datas = CreateDataRows(range, validColumnIndices),
         };

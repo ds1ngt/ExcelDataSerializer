@@ -2,15 +2,9 @@
 
 public abstract class Info
 {
-    class Test<T> 
-    {
-        T? Get()
-        {
-            return default;
-        }
-    }
     public record DataTable
     {
+        public string Name;
         public HeaderRow? Header = null;
         public DataRow[] Datas = Array.Empty<DataRow>();
 

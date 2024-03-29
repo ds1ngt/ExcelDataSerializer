@@ -8,6 +8,8 @@
 
   <ItemGroup>
     <PackageReference Include="ClosedXML" Version="0.104.0-preview2" />
+    <PackageReference Include="MemoryPack" Version="1.21.0" />
+    <PackageReference Include="System.CodeDom" Version="9.0.0-preview.2.24128.5" />
   </ItemGroup>
 
 </Project>
