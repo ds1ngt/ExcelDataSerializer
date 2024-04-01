@@ -14,4 +14,19 @@ public abstract class Util
         if (!IsValidName(name)) return string.Empty;
         return name.Replace("_", string.Empty);
     }
+
+    public static void SaveToFile(string savePath, string text)
+    {
+        if (string.IsNullOrWhiteSpace(savePath))
+            return;
+
+        var saveDir = Path.GetDirectoryName(savePath);
+        if (string.IsNullOrWhiteSpace(saveDir))
+            return;
+
+        if (!Directory.Exists(saveDir))
+            Directory.CreateDirectory(saveDir);
+
+        File.WriteAllText(savePath, text);
+    }
 }

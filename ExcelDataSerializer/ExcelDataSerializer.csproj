@@ -12,4 +12,9 @@
     <PackageReference Include="System.CodeDom" Version="9.0.0-preview.2.24128.5" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="ClassGenerator\" />
+    <Folder Include="DataParser\" />
+  </ItemGroup>
+
 </Project>
