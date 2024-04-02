@@ -7,5 +7,7 @@
                  start-page="Overview.md">
 
     <toc-element topic="ClassDiagram.md"/>
+    <toc-element topic="Sample.md"/>
     <toc-element topic="Overview.md"/>
+    <toc-element topic="Schema.md"/>
 </instance-profile>

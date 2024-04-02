@@ -17,8 +17,8 @@ public class RunnerInfo
     {
         if (files == null || files == Array.Empty<string>())
             return;
-
-        _xlsxFiles.AddRange(files);
+        var filtered = files.Where(f => !f.Contains("~$"));
+        _xlsxFiles.AddRange(filtered);
     }
 #endregion // Public Methods
 

@@ -24,6 +24,7 @@ public abstract class Runner
         GenerateDataClass(info.OutputDir, dataTables);
 
         // 엑셀파일에서 데이터 추출
+        
         // 파일로 저장
     }
 

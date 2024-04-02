@@ -22,10 +22,9 @@ public abstract class Loader
             var dataTable = CreateDataTable(sheetName, range);
             if (dataTable == null) continue;
 
-            dataTable.PrintHeader();
-            dataTable.PrintData();
+            // dataTable.PrintHeader();
+            // dataTable.PrintData();
             dataTables.Add(dataTable);
-            // CodeGenerator.GenerateDataClass(dataTable);
         }
         return dataTables;
     }
@@ -41,55 +40,52 @@ public abstract class Loader
         {
             Name = name,
             Header = header,
-            Datas = CreateDataRows(range, validColumnIndices),
+            Data = CreateDataRows(range, validColumnIndices),
+            TableType = GetTableType(header),
         };
         return result;
     }
     private static TableInfo.Header CreateHeaderRow(IXLRangeRow firstRow)
     {
         var result = new TableInfo.Header();
-        var cells = new List<TableInfo.SchemaCell>();
-        var primaryIdx = -1;
-
-        /* Schema 판별
-         * 1. (Optional) Primary가 있으면 해당 컬럼은 Primary
-         *  - 중복된 Primary 추가 차단
-         * 2. (Optional) Array, List, Dictionary 가 있으면 컨테이너 타입
-         * 3. (Required) Primitive 타입을 처리
-         */
-        for (var i = 1; i < firstRow.CellCount(); ++i)
+        for (var i = 1; i <= firstRow.CellCount(); ++i)
         {
             var cell = firstRow.Cell(i);
             if (!IsValidHeaderCell(cell))
                 continue;
 
-            if (!cell.HasComment) continue;
+            if (!cell.HasComment)
+                continue;
 
             var comment = cell.GetComment().Text;
             if (string.IsNullOrWhiteSpace(comment))
                 continue;
 
+            comment = comment.Substring('\n');
+            
             var tokens = comment.Split('/');
-            var isPrimary = IsPrimary(tokens);
+            var schemaInfo = ParseSchemaInfo(tokens);
+            var cellName = cell.GetValidName();
 
-            if (isPrimary)
+            if (schemaInfo.IsPrimary)
             {
-                if (primaryIdx != -1)
-                    throw new ArgumentException($"Primary Key Duplicated...({primaryIdx}, {i})");
-                primaryIdx = i;
+                if(result.PrimaryIndex != null)
+                    throw new ArgumentException($"Primary Key Duplicated...({result.PrimaryIndex}, {i})");
+                result.PrimaryIndex = i;
             }
 
-            if (IsContainer(tokens))
+            if (schemaInfo.SchemaType is SchemaTypes.EnumSet or SchemaTypes.EnumGet)
+                schemaInfo.DataType = cellName;
+
+            var schemaCell = new TableInfo.SchemaCell
             {
-                    
-            }
-            
-            
-            // cells.Add(new TableInfo.DataCell()
-            // {
-            //     Index = i,
-            //     Value = value,
-            // });
+                Index = i,
+                Name = cellName,
+                SchemaTypes = schemaInfo.SchemaType,
+                ValueType = schemaInfo.DataType,
+            };
+            result.SchemaCells.Add(schemaCell);
+            Console.WriteLine($"{schemaCell.Name} [ {schemaCell.Index} ] {schemaCell.SchemaTypes} / {schemaCell.ValueType}");
         }
         return result;
     }
@@ -105,22 +101,84 @@ public abstract class Loader
         var value = Util.GetValidName(cellValue);
         return Util.IsValidName(value);
     }
-    private static bool IsPrimary(string[] tokens) => IsContains(SchemaTypes.Primary, tokens);
-    private static bool IsContainer(string[] tokens) => IsArray(tokens) || IsList(tokens) || IsDictionary(tokens);
+    private static bool IsPrimary(string[] tokens) => IsContains(Constant.Primary, tokens);
+    private static bool IsPrimary(string token) => IsContains(Constant.Primary, token);
+    private static bool IsContainer(string[] tokens) => IsArray(tokens) || IsList(tokens);
+    private static bool IsContainer(string token) => IsArray(token) || IsList(token);
     private static bool IsArray(string[] tokens) => IsContains(SchemaTypes.Array, tokens);
+    private static bool IsArray(string token) => IsContains(SchemaTypes.Array, token);
     private static bool IsList(string[] tokens) => IsContains(SchemaTypes.List, tokens);
-    private static bool IsDictionary(string[] tokens) => IsContains(SchemaTypes.Dictionary, tokens);
-    private static bool IsEnum(string[] tokens) => IsContains(SchemaTypes.EnumGet, tokens);
-    private static bool IsContains(SchemaTypes schemaTypes, string[] tokens) => tokens.Any(token => schemaTypes.IsEqual(token));
+    private static bool IsList(string token) => IsContains(SchemaTypes.List, token);
+    private static bool IsEnumGet(string[] tokens) => IsContains(SchemaTypes.EnumGet, tokens);
+    private static bool IsEnumGet(string token) => IsContains(SchemaTypes.EnumGet, token);
+    private static bool IsContains(SchemaTypes schemaTypes, string[] tokens) => IsContains(schemaTypes.ToString(), tokens);
+    private static bool IsContains(SchemaTypes schemaTypes, string token) => IsContains(schemaTypes.ToString(), token);
+    private static bool IsContains(string schemaTypeStr, string[] tokens)
+    {
+        var compare = schemaTypeStr.ToLower();
+        return tokens.Any(token => compare == token.ToLower());
+    }
+    
+    private static bool IsContains(string schemaTypeStr, string token)
+    {
+        if (string.IsNullOrWhiteSpace(schemaTypeStr) || string.IsNullOrWhiteSpace(token))
+            return false;
 
-    private static SchemaInfo? ParseSchemaInfo(string[] tokens)
+        var compare = schemaTypeStr.ToLower();
+        return compare == token.ToLower();
+    }
+    private static SchemaInfo ParseSchemaInfo(string[] tokens)
     {
         var info = new SchemaInfo
         {
-            IsPrimary = IsPrimary(tokens), 
+            IsPrimary = IsPrimary(tokens),
         };
-        
+
+        if (IsContains(SchemaTypes.Array, tokens))
+            info.SchemaType = SchemaTypes.Array;
+        else if (IsContains(SchemaTypes.List, tokens))
+            info.SchemaType = SchemaTypes.List;
+        else if (IsContains(SchemaTypes.EnumSet, tokens))
+            info.SchemaType = SchemaTypes.EnumSet;
+        else if (IsContains(SchemaTypes.EnumGet, tokens))
+            info.SchemaType = SchemaTypes.EnumGet;
+
+        if (TryGetPrimitive(tokens, out var type))
+        {
+            if (info.SchemaType == SchemaTypes.None)
+                info.SchemaType = SchemaTypes.Primitive;
+            info.DataType = type.GetTypeStr();
+        }
+        else
+        {
+            if (info.SchemaType == SchemaTypes.None)
+                info.SchemaType = SchemaTypes.Custom;
+            info.DataType = GetCustomDataTypeStr(tokens);
+        }
         return info;
+    }
+    private static bool TryGetPrimitive(string[] tokens, out Types type)
+    {
+        type = Types.Byte;
+        foreach (var token in tokens)
+        {
+            if (TypesExtension.TryGetValue(token, out type))
+                return true;
+        }
+
+        return false;
+    }
+
+    private static string GetCustomDataTypeStr(string[] tokens)
+    {
+        foreach (var token in tokens)
+        {
+            if (SchemaExtension.IsSchema(token)) continue;
+            if (TypesExtension.IsType(token)) continue;
+            return token;
+        }
+
+        return string.Empty;
     }
     
     private static TableInfo.DataRow[] CreateDataRows(IXLRange range, IEnumerable<int> validColumIndices)
@@ -147,5 +205,14 @@ public abstract class Loader
             });
         }
         return rows.ToArray();
+    }
+
+    private static TableInfo.TableType GetTableType(TableInfo.Header header)
+    {
+        if (header.HasPrimaryKey)
+            return TableInfo.TableType.Dictionary;
+        if (header.SchemaCells.Exists(c => c.SchemaTypes == SchemaTypes.EnumSet))
+            return TableInfo.TableType.Enum;
+        return TableInfo.TableType.List;
     }
 }

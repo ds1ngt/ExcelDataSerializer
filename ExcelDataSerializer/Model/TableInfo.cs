@@ -12,7 +12,7 @@ public abstract class TableInfo
     {
         public string Name;
         public Header? Header = null;
-        public DataRow[] Datas = Array.Empty<DataRow>();
+        public DataRow[] Data = Array.Empty<DataRow>();
         public TableType TableType { get; internal set; }
 
         public void PrintHeader()
@@ -20,16 +20,18 @@ public abstract class TableInfo
             if (Header == null)
                 return;
 
+            if (Header.HasPrimaryKey)
+                Console.WriteLine($"Primary Index = {Header.PrimaryIndex}");
             foreach (var cell in Header.SchemaCells)
             {
-                Console.Write($"{cell.Value}\t");
+                Console.Write($"{cell.ValueType}\t");
             }
             Console.WriteLine();
         }
 
         public void PrintData()
         {
-            foreach (var row in Datas)
+            foreach (var row in Data)
             {
                 foreach (var cell in row.DataCells)
                 {
@@ -51,44 +53,44 @@ public abstract class TableInfo
         public DataCell[] DataCells = Array.Empty<DataCell>();
     }
 
-    public abstract record SchemaCell
+    public record SchemaCell
     {
+        public string Name;
         public int Index;
         public SchemaTypes SchemaTypes;
-        public ContainerType? ContainerType; // SchemaType is (Array, List, Dictionary)
-        public string Value = string.Empty;
+        public string ValueType = string.Empty;
 
         public string GetTypeStr()
         {
             return string.Empty;
         }
 
-        private bool TryGetContainerTypeStr(out string typeStr)
-        {
-            typeStr = string.Empty;
-            if (ContainerType == null)
-                return false;
-
-            var containerKeyType = ContainerType.KeyType.GetTypeStr();
-            var containerValueType = ContainerType.ValueType.GetTypeStr();
-
-            switch (SchemaTypes)
-            {
-                case SchemaTypes.Array:
-                    typeStr = $"{containerValueType}[]";
-                    return true;
-                case SchemaTypes.List:
-                    typeStr = $"System.Collections.Generic.List<{containerValueType}>";
-                    return true;
-                case SchemaTypes.Dictionary:
-                    typeStr = $"System.Collections.Generic.Dictionary<{containerKeyType}, {containerValueType}>";
-                    return true;
-                default:
-                    return false;
-            }
-
-            return false;
-        }
+        // private bool TryGetContainerTypeStr(out string typeStr)
+        // {
+        //     typeStr = string.Empty;
+        //     if (ContainerType == null)
+        //         return false;
+        //
+        //     var containerKeyType = ContainerType.KeyType.GetTypeStr();
+        //     var containerValueType = ContainerType.ValueType.GetTypeStr();
+        //
+        //     switch (SchemaTypes)
+        //     {
+        //         case SchemaTypes.Array:
+        //             typeStr = $"{containerValueType}[]";
+        //             return true;
+        //         case SchemaTypes.List:
+        //             typeStr = $"System.Collections.Generic.List<{containerValueType}>";
+        //             return true;
+        //         case SchemaTypes.Dictionary:
+        //             typeStr = $"System.Collections.Generic.Dictionary<{containerKeyType}, {containerValueType}>";
+        //             return true;
+        //         default:
+        //             return false;
+        //     }
+        //
+        //     return false;
+        // }
     }
     public record DataCell
     {

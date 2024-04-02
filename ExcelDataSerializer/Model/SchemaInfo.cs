@@ -1,6 +1,6 @@
 ﻿namespace ExcelDataSerializer.Model;
 
-public struct SchemaInfo
+public class SchemaInfo
 {
     public bool IsPrimary;
     public SchemaTypes SchemaType;
