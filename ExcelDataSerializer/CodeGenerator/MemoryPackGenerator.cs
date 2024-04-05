@@ -10,6 +10,7 @@ public abstract class MemoryPackGenerator
     public static DataClassInfo GenerateDataClass(TableInfo.DataTable dataTable)
     {
         var builder = CodeBuilder.NewBuilder();
+        builder.Import("MemoryPack");
         switch (dataTable.TableType)
         {
             case TableInfo.TableType.List:

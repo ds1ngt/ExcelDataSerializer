@@ -5,6 +5,9 @@ namespace ExcelDataSerializer.ExcelLoader;
 
 public abstract class Loader
 {
+    private const int HEADER_NAME_ROW = 1;
+    private const int SCHEMA_ROW = 2;
+    private const int DATA_BEGIN_ROW = 3;
     public static IEnumerable<TableInfo.DataTable> LoadXls(string path)
     {
         Logger.Instance.LogLine($"Load Excel = {path}");
@@ -34,7 +37,10 @@ public abstract class Loader
         if (string.IsNullOrWhiteSpace(name))
             return null;
 
-        var header = CreateHeaderRow(range.FirstRow());
+        var header = CreateHeaderRow(range);
+        if (header == null)
+            return null;
+
         var validColumnIndices = header.SchemaCells.Select(cell => cell.Index);
         var result = new TableInfo.DataTable
         {
@@ -45,27 +51,34 @@ public abstract class Loader
         };
         return result;
     }
-    private static TableInfo.Header CreateHeaderRow(IXLRangeRow firstRow)
+    private static TableInfo.Header? CreateHeaderRow(IXLRange range)
     {
         var result = new TableInfo.Header();
-        for (var i = 1; i <= firstRow.CellCount(); ++i)
+
+        var headerNameRow = range.Row(HEADER_NAME_ROW);
+        var schemaRow = range.Row(SCHEMA_ROW);
+        if (headerNameRow == null || schemaRow == null || headerNameRow.CellCount() != schemaRow.CellCount())
+            return null;
+
+        var cellCount = headerNameRow.CellCount();
+
+        for (var i = 1; i <= cellCount; ++i)
         {
-            var cell = firstRow.Cell(i);
-            if (!IsValidHeaderCell(cell))
+            var name = headerNameRow.Cell(i);
+            var schema = schemaRow.Cell(i);
+            if (name == null || schema == null)
                 continue;
 
-            if (!cell.HasComment)
+            if (!IsValidHeaderCell(name))
                 continue;
-
-            var comment = cell.GetComment().Text;
-            if (string.IsNullOrWhiteSpace(comment))
-                continue;
-
-            comment = comment.Substring('\n');
             
-            var tokens = comment.Split('/');
+            var schemaText = schema.GetValue<string>();
+            if (string.IsNullOrWhiteSpace(schemaText))
+                continue;
+
+            var tokens = schemaText.Split('/');
             var schemaInfo = ParseSchemaInfo(tokens);
-            var cellName = cell.GetValidName();
+            var cellName = name.GetValidName();
 
             if (schemaInfo.IsPrimary)
             {
@@ -185,7 +198,7 @@ public abstract class Loader
     {
         var rows = new List<TableInfo.DataRow>();
         var cells = new List<TableInfo.DataCell>();
-        foreach (var row in range.Rows().Skip(1))
+        foreach (var row in range.Rows(DATA_BEGIN_ROW, range.RowCount()))
         {
             cells.Clear();
             foreach (var idx in validColumIndices)

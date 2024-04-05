@@ -134,6 +134,49 @@ public static class TypesExtension
         }
     }
 
+    public static string GetShortTypeStr(this Types types)
+    {
+        switch (types)
+        {
+            case Types.Byte: return "byte";
+            case Types.Short:
+            case Types.Int16:
+                return "short";
+            case Types.UShort:
+            case Types.UInt16:
+                return "ushort";
+            case Types.Int:
+            case Types.Int32:
+                return "int";
+            case Types.UInt:
+            case Types.UInt32:
+                return "uint";
+            case Types.Long:
+            case Types.Int64:
+                return "long";
+            case Types.ULong:
+            case Types.UInt64:
+                return "ulong";
+            case Types.Float:
+            case Types.Single:
+                return "float";
+            case Types.Double:
+                return "double";
+            case Types.Decimal:
+                return "decimal";
+            case Types.Boolean:
+                return "bool";
+            case Types.String:
+                return "string";
+            case Types.Vector3:
+                return "UnityEngine.Vector3";
+            case Types.Quaternion:
+                return "UnityEngine.Quaternion";
+            default:
+                return string.Empty;
+        }
+    }
+
     public static bool TryGetValue(string typeStr, out Types types)
     {
         types = Types.Int;
