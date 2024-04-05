@@ -10,10 +10,13 @@ public abstract class Loader
     private const int DATA_BEGIN_ROW = 3;
     public static IEnumerable<TableInfo.DataTable> LoadXls(string path)
     {
-        Logger.Instance.LogLine($"Load Excel = {path}");
-        var dataTables = new List<TableInfo.DataTable>();
-        var workbook = new XLWorkbook(path);
+        if (string.IsNullOrWhiteSpace(path))
+            return Array.Empty<TableInfo.DataTable>();
 
+        Logger.Instance.LogLine($"Load Excel = {path}");
+        using var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+        var dataTables = new List<TableInfo.DataTable>();
+        var workbook = new XLWorkbook(fs);
         foreach (var sheet in workbook.Worksheets)
         {
             var sheetName = sheet.Name.Replace("_", string.Empty);

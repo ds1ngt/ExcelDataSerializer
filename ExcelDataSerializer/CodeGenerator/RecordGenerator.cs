@@ -1,5 +1,6 @@
 ﻿using System.CodeDom;
 using System.Text;
+using DocumentFormat.OpenXml.Spreadsheet;
 using ExcelDataSerializer.Model;
 
 namespace ExcelDataSerializer.CodeGenerator;
@@ -18,13 +19,13 @@ public class RecordGenerator
                 {
                     var cls = new CodeTypeDeclaration($"{dataTable.Name}Data");
                     cls.CustomAttributes.Add(new CodeAttributeDeclaration("Serializable"));
-
+                    
                     foreach (var cell in dataTable.Header.SchemaCells)
                     {
                         var member = new CodeMemberField();
                         member.Attributes = MemberAttributes.Public;
-                        member.Name = cell.Name;
-                        member.Type = new CodeTypeReference(cell.ValueType);
+                        member.Name = TrimUnderscore(cell.Name);
+                        member.Type = new CodeTypeReference(GetTypeStr(cell.SchemaTypes, cell.ValueType));
                         cls.Members.Add(member);
                     }
                     builder.AddMember(cls);
@@ -65,10 +66,11 @@ public class RecordGenerator
                     foreach (var cell in column)
                     {
                         if (cell.Index != schema.Index) continue;
-                        if (string.IsNullOrWhiteSpace(cell.Value))
+                        var name = TrimUnderscore(cell.Value);
+                        if (string.IsNullOrWhiteSpace(name))
                             continue;
 
-                        enumType.Members.Add(new CodeMemberField {Name = cell.Value});
+                        enumType.Members.Add(new CodeMemberField {Name = name});
                     }
                     enumType.IsEnum = true;
                     builder.AddMember(enumType);
@@ -87,6 +89,12 @@ public class RecordGenerator
         };
     }
 
+    private static string GetTypeStr(SchemaTypes schemaTypes, string valueType) => schemaTypes switch
+    {
+        SchemaTypes.Array => $"{valueType}[]",
+        SchemaTypes.List => $"List<{valueType}>",
+        _ => valueType
+    };
     public static string GenerateRecordData(TableInfo.DataTable dataTable)
     {
         if (!dataTable.Header.HasPrimaryKey)
@@ -142,6 +150,8 @@ public class RecordGenerator
 
     private static string GetCellValue(TableInfo.SchemaCell schema, TableInfo.DataCell cell)
     {
+        var result = string.Empty;
+
         switch (schema.SchemaTypes)
         {
             case SchemaTypes.Primitive:
@@ -162,23 +172,29 @@ public class RecordGenerator
                 switch (type)
                 {
                     case Types.String:
-                        return $"\"{cell.Value}\"";
+                        result = $"\"{cell.Value}\"";
+                        break;
                     default:
-                        return cell.Value;
+                        result = cell.Value;
+                        break;
                 }
             }
+                break;
             case SchemaTypes.Array:
             case SchemaTypes.List:
             case SchemaTypes.Custom:
-                return cell.Value;
+                result = cell.Value;
+                break;
             case SchemaTypes.EnumGet:
-                return cell.Value;
+                result = cell.Value;
+                break;
             case SchemaTypes.EnumSet:
             case SchemaTypes.None:
             default:
                 break;
         }
-
-        return string.Empty;
+        return TrimUnderscore(result);
     }
+
+    private static string TrimUnderscore(string value) => value.Replace("_", string.Empty);
 }

@@ -24,16 +24,17 @@ internal abstract class Program
 
         DeleteAllFiles(csOutputDir);
         DeleteAllFiles(dataOutputDir);
-        return 0;
         
-        var files = Directory.GetFiles("Excel");
+        var files = GetExcelFiles(excelDir);
+        if(files == Array.Empty<string>())
+            return 0;
+
         var info = new RunnerInfo();
-        var saveDir = Path.Combine(Path.GetTempPath(), "ExcelDataSerializer");
-        info.SetOutputDirectory(saveDir);
+        info.SetOutputDirectory(csOutputDir, dataOutputDir);
         info.AddExcelFiles(files);
         
         Runner.Execute(info);
-        // MemoryPackTest();
+        return 0;
     }
 
     static void DeleteAllFiles(string dir)
@@ -44,5 +45,13 @@ internal abstract class Program
         var files = Directory.GetFiles(dir);
         foreach (var file in files)
             File.Delete(file);
+    }
+
+    static string[] GetExcelFiles(string dir)
+    {
+        if (!Directory.Exists(dir))
+            return Array.Empty<string>();
+
+        return Directory.GetFiles(dir, "*.xlsx");
     }
 }

@@ -2,17 +2,24 @@
 
 public class RunnerInfo
 {
-    private string _outputDir = string.Empty;
+    private string _csOutputDir = string.Empty;
+    private string _dataOutputDir = string.Empty;
     private readonly List<string> _xlsxFiles = new List<string>();
 
 
 #region Properties
-    internal string OutputDir => _outputDir;
+    internal string CSharpOutputDir => _csOutputDir;
+    internal string DataOutputDir => _dataOutputDir;
     internal IReadOnlyList<string> XlsxFiles => _xlsxFiles;
 #endregion // Properties
 
 #region Public Methods
-    public void SetOutputDirectory(string outputDir) => _outputDir = outputDir;
+
+    public void SetOutputDirectory(string csOutputDir, string dataOutputDir)
+    {
+        _csOutputDir = csOutputDir;
+        _dataOutputDir = dataOutputDir;
+    }
     public void AddExcelFiles(params string[]? files)
     {
         if (files == null || files == Array.Empty<string>())
@@ -23,11 +30,6 @@ public class RunnerInfo
 #endregion // Public Methods
 
 #region Private Methods
-    internal bool Validate()
-    {
-        if (string.IsNullOrWhiteSpace(_outputDir))
-            return false;
-        return true;
-    }
+    internal bool Validate() => !string.IsNullOrWhiteSpace(_csOutputDir) && !string.IsNullOrWhiteSpace(_dataOutputDir);
 #endregion // Private Methods
 }

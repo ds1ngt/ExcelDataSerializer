@@ -1,8 +1,6 @@
 ﻿using ExcelDataSerializer.CodeGenerator;
-using ExcelDataSerializer.DataExtractor;
 using ExcelDataSerializer.ExcelLoader;
 using ExcelDataSerializer.Model;
-using Newtonsoft.Json;
 
 namespace ExcelDataSerializer;
 
@@ -16,8 +14,9 @@ public abstract class Runner
         }
 
         Logger.Instance.LogLine("Runner Info");
-        Logger.Instance.LogLine($"Output Dir: {info.OutputDir}");
-        Logger.Instance.LogLine($"Total {info.XlsxFiles.Count} worksheets");
+        Logger.Instance.LogLine($"> CSharp Output Dir: {info.CSharpOutputDir}");
+        Logger.Instance.LogLine($"> Data Output Dir: {info.DataOutputDir}");
+        Logger.Instance.LogLine($"> Total {info.XlsxFiles.Count} worksheets");
 
         // 엑셀 변환 준비 (Excel -> DataTable)
         var dataTables = ExcelConvert(info);
@@ -33,7 +32,7 @@ public abstract class Runner
         // AssemblyDataInjector.Test(dataTables, assemblyInfoMap);
 
         // 파일로 저장
-        GenerateDataClassRecord(info.OutputDir, dataTables);
+        GenerateDataClassRecord(info.CSharpOutputDir, info.DataOutputDir, dataTables);
     }
     
     private static Dictionary<string, TableInfo.DataTable> ExcelConvert(RunnerInfo info)
@@ -66,13 +65,13 @@ public abstract class Runner
         return result.ToArray();
     }
 
-    private static DataClassInfo[] GenerateDataClassRecord(string outputDir, Dictionary<string, TableInfo.DataTable> dataTables)
+    private static DataClassInfo[] GenerateDataClassRecord(string csOutputDir, string dataOutputDir, Dictionary<string, TableInfo.DataTable> dataTables)
     {
         var result = new List<DataClassInfo>();
         foreach (var (key, value) in dataTables)
         {
-            var saveFilePath = Path.Combine(outputDir, $"{key}Table.cs");
-            var saveDataFilePath = Path.Combine(outputDir, $"{key}Table.dat");
+            var saveFilePath = Path.Combine(csOutputDir, $"{key}Table.cs");
+            var saveDataFilePath = Path.Combine(dataOutputDir, $"{key}Table.json");
             var classInfo = RecordGenerator.GenerateDataClass(value);
             if (classInfo == null)
                 continue;
