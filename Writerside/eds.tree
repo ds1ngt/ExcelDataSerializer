@@ -2,12 +2,13 @@
 <!DOCTYPE instance-profile
         SYSTEM "https://resources.jetbrains.com/writerside/1.0/product-profile.dtd">
 
-<instance-profile id="m"
-                 name="Manual"
+<instance-profile id="eds"
+                 name="Excel Data Serializer"
                  start-page="Overview.md">
 
+    <toc-element topic="Overview.md"/>
+    <toc-element topic="Process.md"/>
+    <toc-element topic="Schema.md"/>
     <toc-element topic="ClassDiagram.md"/>
     <toc-element topic="Sample.md"/>
-    <toc-element topic="Overview.md"/>
-    <toc-element topic="Schema.md"/>
 </instance-profile>

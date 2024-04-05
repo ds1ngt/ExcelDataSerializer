@@ -1,4 +1,4 @@
-# Sample
+# 예제
 ## 일반 데이터 시트
 ### Excel (Data)
 
@@ -24,7 +24,7 @@ public partial class User
 }
 
 [MemoryPackable(GenerateType.Collection)]
-public partial class UserTable : List<User>
+public partial class UserTable : Dictionary<int, User>
 {
     public static UserTable Get(string base64Str)
     {

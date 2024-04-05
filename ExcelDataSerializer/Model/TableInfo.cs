@@ -21,12 +21,12 @@ public abstract class TableInfo
                 return;
 
             if (Header.HasPrimaryKey)
-                Console.WriteLine($"Primary Index = {Header.PrimaryIndex}");
+                Logger.Instance.LogLine($"Primary Index = {Header.PrimaryIndex}");
             foreach (var cell in Header.SchemaCells)
             {
-                Console.Write($"{cell.ValueType}\t");
+                Logger.Instance.Log($"{cell.ValueType}\t");
             }
-            Console.WriteLine();
+            Logger.Instance.LogLine();
         }
 
         public void PrintData()
@@ -35,9 +35,9 @@ public abstract class TableInfo
             {
                 foreach (var cell in row.DataCells)
                 {
-                    Console.Write($"{cell.Value}\t");
+                    Logger.Instance.Log($"{cell.Value}\t");
                 }
-                Console.WriteLine();
+                Logger.Instance.LogLine();
             }
         }
     }
@@ -64,33 +64,6 @@ public abstract class TableInfo
         {
             return string.Empty;
         }
-
-        // private bool TryGetContainerTypeStr(out string typeStr)
-        // {
-        //     typeStr = string.Empty;
-        //     if (ContainerType == null)
-        //         return false;
-        //
-        //     var containerKeyType = ContainerType.KeyType.GetTypeStr();
-        //     var containerValueType = ContainerType.ValueType.GetTypeStr();
-        //
-        //     switch (SchemaTypes)
-        //     {
-        //         case SchemaTypes.Array:
-        //             typeStr = $"{containerValueType}[]";
-        //             return true;
-        //         case SchemaTypes.List:
-        //             typeStr = $"System.Collections.Generic.List<{containerValueType}>";
-        //             return true;
-        //         case SchemaTypes.Dictionary:
-        //             typeStr = $"System.Collections.Generic.Dictionary<{containerKeyType}, {containerValueType}>";
-        //             return true;
-        //         default:
-        //             return false;
-        //     }
-        //
-        //     return false;
-        // }
     }
     public record DataCell
     {

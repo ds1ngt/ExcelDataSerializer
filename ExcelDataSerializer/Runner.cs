@@ -1,4 +1,5 @@
 ﻿using ExcelDataSerializer.CodeGenerator;
+using ExcelDataSerializer.DataExtractor;
 using ExcelDataSerializer.ExcelLoader;
 using ExcelDataSerializer.Model;
 
@@ -13,40 +14,53 @@ public abstract class Runner
             throw new ArgumentException("Execute Failed. Invalid  runner info");
         }
 
-        Console.WriteLine("Runner Info");
-        Console.WriteLine($"Output Dir: {info.OutputDir}");
-        Console.WriteLine($"Total {info.XlsxFiles.Count} worksheets");
+        Logger.Instance.LogLine("Runner Info");
+        Logger.Instance.LogLine($"Output Dir: {info.OutputDir}");
+        Logger.Instance.LogLine($"Total {info.XlsxFiles.Count} worksheets");
 
         // 엑셀 변환 준비 (Excel -> DataTable)
         var dataTables = ExcelConvert(info);
-
+        
         // 데이터 클래스 생성 (DataTable -> C#)
-        GenerateDataClass(info.OutputDir, dataTables);
+        var classInfos = GenerateDataClass(info.OutputDir, dataTables);
+        
+        // 어셈블리 생성 및 테이블 클래스 인스턴스 생성
+        var assemblyInfoMap = AssemblyHelper.CompileDataClassInfos(classInfos);
+        AssemblyHelper.PrintAssemblyInfos(assemblyInfoMap);
 
         // 엑셀파일에서 데이터 추출
-        
+        AssemblyDataInjector.Test(dataTables, assemblyInfoMap);
+
         // 파일로 저장
     }
 
-    private static IEnumerable<TableInfo.DataTable> ExcelConvert(RunnerInfo info)
+    private static Dictionary<string, TableInfo.DataTable> ExcelConvert(RunnerInfo info)
     {
-        var result = new List<TableInfo.DataTable>();
+        var result = new Dictionary<string, TableInfo.DataTable>();
         foreach (var filePath in info.XlsxFiles)
         {
             var dataTables = Loader.LoadXls(filePath);
-            result.AddRange(dataTables);
+            foreach (var table in dataTables)
+            {
+                if (!result.TryAdd(table.Name, table))
+                    Logger.Instance.LogLine($"ExcelConvert : Name Duplicate!!! {filePath} : {table.Name}");
+            }
         }
 
         return result;
     }
 
-    private static void GenerateDataClass(string outputDir, IEnumerable<TableInfo.DataTable> dataTables)
+    private static DataClassInfo[] GenerateDataClass(string outputDir, Dictionary<string, TableInfo.DataTable> dataTables)
     {
-        foreach (var dataTable in dataTables)
+        var result = new List<DataClassInfo>();
+        foreach (var (key, value) in dataTables)
         {
-            var saveFilePath = Path.Combine(outputDir, $"{dataTable.Name}Table.cs");
-            var classText = MemoryPackGenerator.GenerateDataClass(dataTable);
-            Util.SaveToFile(saveFilePath, classText);
+            var saveFilePath = Path.Combine(outputDir, $"{key}Table.cs");
+            var classInfo = MemoryPackGenerator.GenerateDataClass(value);
+            result.Add(classInfo);
+            Util.Util.SaveToFile(saveFilePath, classInfo.Code);
         }
+
+        return result.ToArray();
     }
 }

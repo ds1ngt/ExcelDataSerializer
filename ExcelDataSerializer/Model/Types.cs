@@ -16,12 +16,19 @@ public enum Types
     // Primitive Types
     Byte,
     Short,          // int 16
+    Int16,          // 데이터 파싱에 사용
     UShort,
+    UInt16,         // 데이터 파싱에 사용
     Int,            // int 32
+    Int32,          // 데이터 파싱에 사용
     UInt,
+    UInt32,         // 데이터 파싱에 사용
     Long,           // int 64
+    Int64,          // 데이터 파싱에 사용
     ULong,
+    UInt64,         // 데이터 파싱에 사용
     Float,
+    Single,         // 데이터 파싱에 사용
     Double,
     Decimal,
     Boolean,
@@ -44,8 +51,8 @@ public static class SchemaExtension
 
     static SchemaExtension()
     {
-        var values = Enum.GetValues<SchemaTypes>();
-        foreach (var value in values)
+        var values = Enum.GetValues(typeof(SchemaTypes));
+        foreach (SchemaTypes value in values)
             _strTypesMap.Add(value.ToString().ToLower(), value);
     }
 
@@ -83,22 +90,39 @@ public static class TypesExtension
 
     static TypesExtension()
     {
-        var values = Enum.GetValues<Types>();
-        foreach (var value in values)
-            _strTypesMap.Add(value.ToString().ToLower(), value);
+        var values = Enum.GetValues(typeof(Types));
+        foreach (Types value in values)
+        {
+            var typeValues = value.ToString().ToLower();
+            _strTypesMap.Add(typeValues, value);
+        }
     }
     public static string GetTypeStr(this Types types)
     {
         switch (types)
         {
             case Types.Byte: return "System.Byte";
-            case Types.Short: return "System.Int16";
-            case Types.UShort: return "System.UInt16";
-            case Types.Int: return "System.Int32";
-            case Types.UInt: return "System.UInt32";
-            case Types.Long: return "System.Int64";
-            case Types.ULong: return "System.UInt64";
-            case Types.Float: return "System.Single";
+            case Types.Short:
+            case Types.Int16: 
+                return "System.Int16";
+            case Types.UShort:
+            case Types.UInt16: 
+                return "System.UInt16";
+            case Types.Int:
+            case Types.Int32: 
+                return "System.Int32";
+            case Types.UInt:
+            case Types.UInt32: 
+                return "System.UInt32";
+            case Types.Long:
+            case Types.Int64: 
+                return "System.Int64";
+            case Types.ULong:
+            case Types.UInt64:
+                return "System.UInt64";
+            case Types.Single:
+            case Types.Float: 
+                return "System.Single";
             case Types.Double: return "System.Double";
             case Types.Decimal: return "System.Decimal";
             case Types.Boolean: return "System.Boolean";

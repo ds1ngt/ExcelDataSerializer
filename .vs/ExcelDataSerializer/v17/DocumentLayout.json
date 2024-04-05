@@ -1,0 +1,109 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "E:\\Workspace\\ExcelDataSerializer\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{4C2E6C41-5EB9-4204-A123-26F60E5187E6}|ExcelDataSerializerConsole\\ExcelDataSerializerConsole.csproj|e:\\workspace\\exceldataserializer\\exceldataserializerconsole\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{4C2E6C41-5EB9-4204-A123-26F60E5187E6}|ExcelDataSerializerConsole\\ExcelDataSerializerConsole.csproj|solutionrelative:exceldataserializerconsole\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F8F76DA1-E2B7-4C95-B619-CB2BE3DD6E85}|ExcelDataSerializer.CodeGen\\ExcelDataSerializer.CodeGen.csproj|e:\\workspace\\exceldataserializer\\exceldataserializer.codegen\\testsourcegenerator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F8F76DA1-E2B7-4C95-B619-CB2BE3DD6E85}|ExcelDataSerializer.CodeGen\\ExcelDataSerializer.CodeGen.csproj|solutionrelative:exceldataserializer.codegen\\testsourcegenerator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{4C2E6C41-5EB9-4204-A123-26F60E5187E6}|ExcelDataSerializerConsole\\ExcelDataSerializerConsole.csproj|e:\\workspace\\exceldataserializer\\exceldataserializerconsole\\exceldataserializerconsole.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{4C2E6C41-5EB9-4204-A123-26F60E5187E6}|ExcelDataSerializerConsole\\ExcelDataSerializerConsole.csproj|solutionrelative:exceldataserializerconsole\\exceldataserializerconsole.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B6411C8F-5C7E-4483-915C-C2E2F1019C9F}|ExcelDataSerializer\\ExcelDataSerializer.csproj|e:\\workspace\\exceldataserializer\\exceldataserializer\\codegenerator\\codegentest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B6411C8F-5C7E-4483-915C-C2E2F1019C9F}|ExcelDataSerializer\\ExcelDataSerializer.csproj|solutionrelative:exceldataserializer\\codegenerator\\codegentest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B6411C8F-5C7E-4483-915C-C2E2F1019C9F}|ExcelDataSerializer\\ExcelDataSerializer.csproj|e:\\workspace\\exceldataserializer\\exceldataserializer\\exceldataserializer.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{B6411C8F-5C7E-4483-915C-C2E2F1019C9F}|ExcelDataSerializer\\ExcelDataSerializer.csproj|solutionrelative:exceldataserializer\\exceldataserializer.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 4,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{cce594b6-0c39-4442-ba28-10c64ac7e89f}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "ExcelDataSerializerConsole",
+              "DocumentMoniker": "E:\\Workspace\\ExcelDataSerializer\\ExcelDataSerializerConsole\\ExcelDataSerializerConsole.csproj",
+              "RelativeDocumentMoniker": "ExcelDataSerializerConsole\\ExcelDataSerializerConsole.csproj",
+              "ToolTip": "E:\\Workspace\\ExcelDataSerializer\\ExcelDataSerializerConsole\\ExcelDataSerializerConsole.csproj",
+              "RelativeToolTip": "ExcelDataSerializerConsole\\ExcelDataSerializerConsole.csproj",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAABkAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2024-04-04T09:28:16.495Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "ExcelDataSerializer",
+              "DocumentMoniker": "E:\\Workspace\\ExcelDataSerializer\\ExcelDataSerializer\\ExcelDataSerializer.csproj",
+              "RelativeDocumentMoniker": "ExcelDataSerializer\\ExcelDataSerializer.csproj",
+              "ToolTip": "E:\\Workspace\\ExcelDataSerializer\\ExcelDataSerializer\\ExcelDataSerializer.csproj",
+              "RelativeToolTip": "ExcelDataSerializer\\ExcelDataSerializer.csproj",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAABMAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2024-04-04T09:25:07.398Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "TestSourceGenerator.cs",
+              "DocumentMoniker": "E:\\Workspace\\ExcelDataSerializer\\ExcelDataSerializer.CodeGen\\TestSourceGenerator.cs",
+              "RelativeDocumentMoniker": "ExcelDataSerializer.CodeGen\\TestSourceGenerator.cs",
+              "ToolTip": "E:\\Workspace\\ExcelDataSerializer\\ExcelDataSerializer.CodeGen\\TestSourceGenerator.cs",
+              "RelativeToolTip": "ExcelDataSerializer.CodeGen\\TestSourceGenerator.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAA0AAAAlAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-04-04T09:21:25.467Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "Program.cs",
+              "DocumentMoniker": "E:\\Workspace\\ExcelDataSerializer\\ExcelDataSerializerConsole\\Program.cs",
+              "RelativeDocumentMoniker": "ExcelDataSerializerConsole\\Program.cs",
+              "ToolTip": "E:\\Workspace\\ExcelDataSerializer\\ExcelDataSerializerConsole\\Program.cs",
+              "RelativeToolTip": "ExcelDataSerializerConsole\\Program.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAwAAAAPAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-04-04T09:16:34.125Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "CodeGenTest.cs",
+              "DocumentMoniker": "E:\\Workspace\\ExcelDataSerializer\\ExcelDataSerializer\\CodeGenerator\\CodeGenTest.cs",
+              "RelativeDocumentMoniker": "ExcelDataSerializer\\CodeGenerator\\CodeGenTest.cs",
+              "ToolTip": "E:\\Workspace\\ExcelDataSerializer\\ExcelDataSerializer\\CodeGenerator\\CodeGenTest.cs",
+              "RelativeToolTip": "ExcelDataSerializer\\CodeGenerator\\CodeGenTest.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAuwAUAAAAFAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-04-04T09:16:02.808Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,3 +1,3 @@
-# Schema
+# 스키마
 
 Start typing here...

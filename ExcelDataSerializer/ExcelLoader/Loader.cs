@@ -7,14 +7,14 @@ public abstract class Loader
 {
     public static IEnumerable<TableInfo.DataTable> LoadXls(string path)
     {
-        Console.WriteLine($"Load Excel = {path}");
+        Logger.Instance.LogLine($"Load Excel = {path}");
         var dataTables = new List<TableInfo.DataTable>();
         var workbook = new XLWorkbook(path);
 
         foreach (var sheet in workbook.Worksheets)
         {
             var sheetName = sheet.Name.Replace("_", string.Empty);
-            Console.WriteLine($" - {sheetName}");
+            Logger.Instance.LogLine($" - {sheetName}");
             var range = sheet.RangeUsed();
             if(range == null)
                 continue;
@@ -85,7 +85,7 @@ public abstract class Loader
                 ValueType = schemaInfo.DataType,
             };
             result.SchemaCells.Add(schemaCell);
-            Console.WriteLine($"{schemaCell.Name} [ {schemaCell.Index} ] {schemaCell.SchemaTypes} / {schemaCell.ValueType}");
+            Logger.Instance.LogLine($"{schemaCell.Name} [ {schemaCell.Index} ] {schemaCell.SchemaTypes} / {schemaCell.ValueType}");
         }
         return result;
     }
@@ -98,8 +98,8 @@ public abstract class Loader
         if (!cell.TryGetValue<string>(out var cellValue)) 
             return false;
 
-        var value = Util.GetValidName(cellValue);
-        return Util.IsValidName(value);
+        var value = Util.Util.GetValidName(cellValue);
+        return Util.Util.IsValidName(value);
     }
     private static bool IsPrimary(string[] tokens) => IsContains(Constant.Primary, tokens);
     private static bool IsPrimary(string token) => IsContains(Constant.Primary, token);

@@ -12,7 +12,7 @@ public static class ClosedXmlExtension
         if (!cell.TryGetValue<string>(out var cellValue)) 
             return string.Empty;
 
-        var value = Util.GetValidName(cellValue);
-        return Util.IsValidName(value) ? value : string.Empty;
+        var value = Util.Util.GetValidName(cellValue);
+        return Util.Util.IsValidName(value) ? value : string.Empty;
     }
 }

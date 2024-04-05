@@ -1,6 +1,4 @@
-﻿using System.Diagnostics;
-
-namespace ExcelDataSerializer;
+﻿namespace ExcelDataSerializer.Util;
 
 public abstract class Util
 {
@@ -30,6 +28,6 @@ public abstract class Util
             Directory.CreateDirectory(saveDir);
 
         File.WriteAllText(savePath, text);
-        Console.WriteLine($"Save {savePath}");
+        Logger.Instance.LogLine($"Save {savePath}");
     }
 }
