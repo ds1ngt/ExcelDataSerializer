@@ -70,8 +70,8 @@ public abstract class Runner
         var result = new List<DataClassInfo>();
         foreach (var (key, value) in dataTables)
         {
-            var saveFilePath = Path.Combine(csOutputDir, $"{key}Table.cs");
-            var saveDataFilePath = Path.Combine(dataOutputDir, $"{key}Table.json");
+            var saveFilePath = Path.Combine(csOutputDir, $"{key}DataTable.cs");
+            var saveDataFilePath = Path.Combine(dataOutputDir, $"{key}DataTable.json");
             var classInfo = RecordGenerator.GenerateDataClass(value);
             if (classInfo == null)
                 continue;
