@@ -90,15 +90,12 @@ public abstract class Loader
                 result.PrimaryIndex = i;
             }
 
-            if (schemaInfo.SchemaType is SchemaTypes.EnumSet or SchemaTypes.EnumGet)
-                schemaInfo.DataType = cellName;
-
             var schemaCell = new TableInfo.SchemaCell
             {
                 Index = i,
                 Name = cellName,
                 SchemaTypes = schemaInfo.SchemaType,
-                ValueType = schemaInfo.DataType,
+                ValueType = Util.Util.TrimUnderscore(schemaInfo.DataType),
             };
             result.SchemaCells.Add(schemaCell);
             Logger.Instance.LogLine($"{schemaCell.Name} [ {schemaCell.Index} ] {schemaCell.SchemaTypes} / {schemaCell.ValueType}");
@@ -165,6 +162,10 @@ public abstract class Loader
                 info.SchemaType = SchemaTypes.Primitive;
             info.DataType = type.GetTypeStr();
         }
+        else if (TryGetEnum(tokens, out var enumTypeStr))
+        {
+            info.DataType = enumTypeStr;
+        }
         else
         {
             if (info.SchemaType == SchemaTypes.None)
@@ -185,6 +186,18 @@ public abstract class Loader
         return false;
     }
 
+    private static bool TryGetEnum(string[] tokens, out string enumTypeStr)
+    {
+        enumTypeStr = string.Empty;
+
+        if (tokens.Length < 2)
+            return false;
+        if (tokens[Constant.SchemaCellIdx].ToLower() != Constant.EnumGet.ToLower())
+            return false;
+
+        enumTypeStr = tokens[Constant.TypeCellIdx];
+        return true;
+    }
     private static string GetCustomDataTypeStr(string[] tokens)
     {
         foreach (var token in tokens)

@@ -30,4 +30,5 @@ public abstract class Util
         File.WriteAllText(savePath, text);
         Logger.Instance.LogLine($"Save {savePath}");
     }
+    public static string TrimUnderscore(string value) => value.Replace("_", string.Empty);
 }

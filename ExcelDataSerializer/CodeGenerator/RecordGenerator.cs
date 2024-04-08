@@ -1,17 +1,19 @@
 ﻿using System.CodeDom;
-using System.Data;
+using System.Globalization;
 using System.Text;
-using DocumentFormat.OpenXml.Office2010.ExcelAc;
 using ExcelDataSerializer.Model;
 
 namespace ExcelDataSerializer.CodeGenerator;
 
 public abstract class RecordGenerator
 {
+    private static readonly string _dataNamespace = "com.haegin.Billionaire.Data";
+    private static readonly string _dataSuffix = "Data";
+    private static readonly string _dataTableSuffix = "DataTable";
 #region Data Class
     public static DataClassInfo? GenerateDataClass(TableInfo.DataTable dataTable)
     {
-        using var builder = CodeBuilder.NewBuilder("com.haegin.Billionaire.Board.Data");
+        using var builder = CodeBuilder.NewBuilder(_dataNamespace);
         switch (dataTable.TableType)
         {
             case TableInfo.TableType.List:
@@ -39,7 +41,7 @@ public abstract class RecordGenerator
     private static void AddDataClass(CodeBuilder builder, TableInfo.DataTable dataTable)
     {
         // Data Class
-        var cls = new CodeTypeDeclaration($"{dataTable.Name}Data");
+        var cls = new CodeTypeDeclaration($"{dataTable.Name}{_dataSuffix}");
         cls.CustomAttributes.Add(new CodeAttributeDeclaration("Serializable"));
                 
         foreach (var cell in dataTable.Header!.SchemaCells)
@@ -47,7 +49,7 @@ public abstract class RecordGenerator
             var member = new CodeMemberField
             {
                 Attributes = MemberAttributes.Public,
-                Name = TrimUnderscore(cell.Name),
+                Name = Util.Util.TrimUnderscore(cell.Name),
                 Type = new CodeTypeReference(GetTypeStr(cell.SchemaTypes, cell.ValueType))
             };
             cls.Members.Add(member);
@@ -60,7 +62,7 @@ public abstract class RecordGenerator
         if(dataTable.TableType == TableInfo.TableType.Dictionary && !dataTable.Header!.HasPrimaryKey)
             return;
 
-        var tableCls = new CodeTypeDeclaration($"{dataTable.Name}DataTable");
+        var tableCls = new CodeTypeDeclaration($"{dataTable.Name}{_dataTableSuffix}");
         tableCls.CustomAttributes.Add(new CodeAttributeDeclaration("Serializable"));
 
         var keyType = string.Empty;
@@ -78,7 +80,7 @@ public abstract class RecordGenerator
             Name = Constant.DataTableMemberName,
             Type = new CodeTypeReference
             {
-                BaseType = $"Dictionary<{keyType}, {dataTable.Name}Data>",
+                BaseType = $"Dictionary<{keyType}, {dataTable.Name}{_dataSuffix}>",
             }
         };
         tableCls.Members.Add(member);
@@ -94,7 +96,7 @@ public abstract class RecordGenerator
             foreach (var cell in column)
             {
                 if (cell.Index != schema.Index) continue;
-                var name = TrimUnderscore(cell.Value);
+                var name = Util.Util.TrimUnderscore(cell.Value);
                 if (string.IsNullOrWhiteSpace(name))
                     continue;
 
@@ -181,107 +183,93 @@ public abstract class RecordGenerator
         return itemMap;
     }
 
-    private static string GetCellValue(TableInfo.SchemaCell schema, TableInfo.DataCell cell)
+#region Get Cell Value
+    private static string GetCellValue(TableInfo.SchemaCell schema, TableInfo.DataCell data)
     {
         var result = string.Empty;
 
         switch (schema.SchemaTypes)
         {
             case SchemaTypes.Primitive:
-            {
-                var valueType = schema.ValueType;
-                var idx = valueType.LastIndexOf('.');
-                if (idx != -1)
-                {
-                    valueType = valueType.Substring(idx + 1);
-                }
-
-                if (!TypesExtension.TryGetValue(valueType, out var type))
-                {
-                    Console.WriteLine($"Invalid Type = {valueType}");
-                    return string.Empty;
-                }
-
-                result =  GetPrimitiveValueString(type, cell.Value);
-            }
-                break;
+                return GetPrimitiveCellValue(schema, data);
             case SchemaTypes.Array:
             case SchemaTypes.List:
-                result = !IsContainer(cell.Value) ? "null" : cell.Value;
+                result = !IsContainer(data.Value) ? "null" : data.Value;
                 break;
             case SchemaTypes.Custom:
-                result = cell.Value;
+                result = data.Value;
                 break;
             case SchemaTypes.EnumGet:
-                result = cell.Value;
+                result = Util.Util.TrimUnderscore(schema.ValueType);
                 break;
             case SchemaTypes.EnumSet:
             case SchemaTypes.None:
             default:
                 break;
         }
-        return TrimUnderscore(result);
+        return Util.Util.TrimUnderscore(result);
     }
 
-    private static string TrimUnderscore(string value) => value.Replace("_", string.Empty);
+    private static string GetPrimitiveCellValue(TableInfo.SchemaCell schema, TableInfo.DataCell data)
+    {
+        var valueType = schema.ValueType;
+        var idx = valueType.LastIndexOf('.');
+        if (idx != -1)
+        {
+            valueType = valueType.Substring(idx + 1);
+        }
+
+        if (!TypesExtension.TryGetValue(valueType, out var type))
+        {
+            Console.WriteLine($"Invalid Type = {valueType}");
+            return string.Empty;
+        }
+
+        return Util.Util.TrimUnderscore(GetPrimitiveValueString(type, data.Value));
+    }
     private static bool IsContainer(string value) => value.Length > 2 && value.StartsWith('[') && value.EndsWith(']');
 
     private static string GetPrimitiveValueString(Types type, string value)
     {
-        string result;
         switch (type)
         {
             case Types.Byte:
-                result = byte.TryParse(value, out var b) ? b.ToString() : default(byte).ToString();
-                break;
+                return byte.TryParse(value, out var b) ? b.ToString() : default(byte).ToString();
             case Types.Short:
             case Types.Int16:
-                result = short.TryParse(value, out var s) ? s.ToString() : default(short).ToString();
-                break;
+                return short.TryParse(value, out var s) ? s.ToString() : default(short).ToString();
             case Types.UShort:
             case Types.UInt16:
-                result = ushort.TryParse(value, out var us) ? us.ToString() : default(short).ToString();
-                break;
+                return ushort.TryParse(value, out var us) ? us.ToString() : default(short).ToString();
             case Types.Int:
             case Types.Int32:
-                result = int.TryParse(value, out var i) ? i.ToString() : default(int).ToString();
-                break;
+                return int.TryParse(value, out var i) ? i.ToString() : default(int).ToString();
             case Types.UInt:
             case Types.UInt32:
-                result = uint.TryParse(value, out var ui) ? ui.ToString() : default(short).ToString();
-                break;
+                return uint.TryParse(value, out var ui) ? ui.ToString() : default(short).ToString();
             case Types.Long:
             case Types.Int64:
-                result = long.TryParse(value, out var l) ? l.ToString() : default(short).ToString();
-                break;
+                return long.TryParse(value, out var l) ? l.ToString() : default(short).ToString();
             case Types.ULong:
             case Types.UInt64:
-                result = ulong.TryParse(value, out var ul) ? ul.ToString() : default(short).ToString();
-                break;
+                return ulong.TryParse(value, out var ul) ? ul.ToString() : default(short).ToString();
             case Types.Float:
             case Types.Single:
-                result = float.TryParse(value, out var f) ? f.ToString() : default(short).ToString();
-                break;
+                return float.TryParse(value, out var f) ? f.ToString(CultureInfo.InvariantCulture) : default(short).ToString();
             case Types.Double:
-                result = double.TryParse(value, out var d) ? d.ToString() : default(short).ToString();
-                break;
+                return double.TryParse(value, out var d) ? d.ToString(CultureInfo.InvariantCulture) : default(short).ToString();
             case Types.Decimal:
-                result = decimal.TryParse(value, out var dec) ? dec.ToString() : default(short).ToString();
-                break;
+                return decimal.TryParse(value, out var dec) ? dec.ToString(CultureInfo.InvariantCulture) : default(short).ToString();
             case Types.Boolean:
-                result = bool.TryParse(value, out var bo) ? bo.ToString() : default(short).ToString();
-                break;
+                return bool.TryParse(value, out var bo) ? bo.ToString() : default(short).ToString();
             case Types.String:
-                result = $"\"{value}\"";
-                break;
+                return $"\"{value}\"";
             case Types.Vector3:
             case Types.Quaternion:
             default:
-                result = string.Empty;
-                break;
+                return string.Empty;
         }
-
-        return result;
     }
+#endregion // Get Cell Value
 #endregion // Json Data
 }
