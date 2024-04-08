@@ -10,6 +10,10 @@ public abstract class RecordGenerator
     private static readonly string _dataNamespace = "com.haegin.Billionaire.Data";
     private static readonly string _dataSuffix = "Data";
     private static readonly string _dataTableSuffix = "DataTable";
+
+    private static TableInfo.DataTable _enumTable;
+    public static void SetEnumTable(TableInfo.DataTable enumTable) => _enumTable = enumTable;
+
 #region Data Class
     public static DataClassInfo? GenerateDataClass(TableInfo.DataTable dataTable)
     {
@@ -200,13 +204,16 @@ public abstract class RecordGenerator
                 result = data.Value;
                 break;
             case SchemaTypes.EnumGet:
-                result = Util.Util.TrimUnderscore(schema.ValueType);
+            {
+                result = _enumTable.TryGetEnumValue(schema.ValueType, data.Value, out var value) ? value.ToString() : "0";
+            }
                 break;
             case SchemaTypes.EnumSet:
             case SchemaTypes.None:
             default:
                 break;
         }
+        
         return Util.Util.TrimUnderscore(result);
     }
 

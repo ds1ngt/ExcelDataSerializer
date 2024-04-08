@@ -68,6 +68,9 @@ public abstract class Runner
     private static DataClassInfo[] GenerateDataClassRecord(string csOutputDir, string dataOutputDir, Dictionary<string, TableInfo.DataTable> dataTables)
     {
         var result = new List<DataClassInfo>();
+        var enumTable = dataTables.Values.FirstOrDefault(t => t.TableType == TableInfo.TableType.Enum);
+        RecordGenerator.SetEnumTable(enumTable);
+
         foreach (var (key, value) in dataTables)
         {
             var saveFilePath = Path.Combine(csOutputDir, $"{key}DataTable.cs");
