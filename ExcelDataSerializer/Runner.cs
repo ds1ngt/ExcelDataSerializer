@@ -14,10 +14,10 @@ public abstract class Runner
             throw new ArgumentException("Execute Failed. Invalid  runner info");
         }
 
-        Logger.Instance.LogLine("Runner Info");
-        Logger.Instance.LogLine($"> CSharp Output Dir: {info.CSharpOutputDir}");
-        Logger.Instance.LogLine($"> Data Output Dir: {info.DataOutputDir}");
-        Logger.Instance.LogLine($"> Total {info.XlsxFiles.Count} worksheets");
+        Logger.Instance.LogLine("실행 정보");
+        Logger.Instance.LogLine($"> C# 저장 경로: {info.CSharpOutputDir}");
+        Logger.Instance.LogLine($"> 데이터 저장 경로: {info.DataOutputDir}");
+        Logger.Instance.LogLine($"> 총 {info.XlsxFiles.Count} 워크시트");
 
         // 엑셀 변환 준비 (Excel -> DataTable)
         var dataTables = ExcelConvert(info);
@@ -43,7 +43,7 @@ public abstract class Runner
             foreach (var table in dataTables)
             {
                 if (!result.TryAdd(table.Name, table))
-                    Logger.Instance.LogLine($"ExcelConvert : Name Duplicate!!! {filePath} : {table.Name}");
+                    Logger.Instance.LogLine($"ExcelConvert : 이름 중복!!! {filePath} : {table.Name}");
             }
         }
 

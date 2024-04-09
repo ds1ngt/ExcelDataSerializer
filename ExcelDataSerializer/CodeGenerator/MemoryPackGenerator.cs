@@ -162,7 +162,7 @@ public abstract class MemoryPackGenerator
     private static void SaveTable(TableInfo.DataTable dataTable, StringBuilder sb)
     {
         var savePath = Path.Combine(Path.GetTempPath(), "ExcelDataSerializer", $"{dataTable.Name}.cs");
-        Logger.Instance.LogLine($"Table [{dataTable.Name}] saved. {savePath}");
+        Logger.Instance.LogLine($"테이블 저장 [{dataTable.Name}] {savePath}");
         Util.Util.SaveToFile(savePath, sb.ToString());
     }
 #endregion // Util

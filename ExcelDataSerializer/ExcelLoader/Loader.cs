@@ -14,7 +14,7 @@ public abstract class Loader
         if (string.IsNullOrWhiteSpace(path))
             return Array.Empty<TableInfo.DataTable>();
 
-        Logger.Instance.LogLine($"Load Excel = {path}");
+        Logger.Instance.LogLine($"Excel 로드 = {path}");
         using var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
         var dataTables = new List<TableInfo.DataTable>();
         var workbook = new XLWorkbook(fs);

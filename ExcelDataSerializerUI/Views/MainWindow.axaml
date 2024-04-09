@@ -1,0 +1,66 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:ExcelDataSerializerUI.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="450"
+        x:Class="ExcelDataSerializerUI.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        SizeToContent="WidthAndHeight"
+        Icon="/Assets/avalonia-logo.ico"
+        Title="ExcelDataSerializerUI">
+
+    <Design.DataContext>
+        <!-- This only sets the DataContext for the previewer in an IDE,
+             to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
+        <vm:MainWindowViewModel />
+    </Design.DataContext>
+    
+    <StackPanel>
+        <Border Background="Gainsboro"
+                BorderBrush="Black"
+                BorderThickness="2"
+                CornerRadius="3"
+                Margin="10" Padding="10">
+            <Grid ShowGridLines="False"
+                  ColumnDefinitions="100, Auto, Auto"
+                  RowDefinitions="Auto, Auto, Auto, Auto">
+                <Label Grid.Row="0" Grid.Column="0">Excel 경로</Label>
+                <Button Grid.Row="0" Grid.Column="1" Click="OnOpenExcelFolder">📂</Button>
+                <TextBox Grid.Row="0" Grid.Column="2" Text="{Binding ExcelPath}" HorizontalAlignment="Stretch"/>
+                
+                <Label Grid.Row="2" Grid.Column="0">C#</Label>
+                <Button Grid.Row="2" Grid.Column="1" Click="OnOpenCsOutputFolder">📂</Button>
+                <TextBox Grid.Row="2" Grid.Column="2" Text="{Binding CsOutputPath}" HorizontalAlignment="Stretch"/>
+                
+                <Label Grid.Row="3" Grid.Column="0">Data</Label>
+                <Button Grid.Row="3" Grid.Column="1" Click="OnOpenDataOutputFolder">📂</Button>
+                <TextBox Grid.Row="3" Grid.Column="2" Text="{Binding DataOutputPath}" HorizontalAlignment="Stretch"/>
+            </Grid>
+        </Border>
+        <Border Background="Gainsboro"
+                BorderBrush="Black"
+                BorderThickness="2"
+                CornerRadius="3"
+                Margin="10" Padding="10">
+            <DockPanel>
+                <!-- <Button Click="OnOpenExcelFolder">Excel 폴더 선택</Button> -->
+                <!-- <Button Click="OnOpenSaveFolder">저장 폴더 선택</Button> -->
+                <Button Click="OnExecute">실행</Button>
+            </DockPanel>
+        </Border>
+        <Border Background="Gainsboro"
+                BorderBrush="Black"
+                BorderThickness="2"
+                CornerRadius="3"
+                Margin="10" Padding="10"
+                VerticalAlignment="Stretch">
+            <ScrollViewer AllowAutoHide="True"
+                          VerticalScrollBarVisibility="Auto"
+                          VerticalAlignment="Stretch"
+                          MaxHeight="500">
+                <SelectableTextBlock Text="{Binding Log}"></SelectableTextBlock>
+            </ScrollViewer>
+        </Border>
+    </StackPanel>
+</Window>

@@ -28,7 +28,7 @@ public abstract class Util
             Directory.CreateDirectory(saveDir);
 
         File.WriteAllText(savePath, text);
-        Logger.Instance.LogLine($"Save {savePath}");
+        Logger.Instance.LogLine($"파일 저장 {savePath}");
     }
     public static string TrimUnderscore(string value) => value.Replace("_", string.Empty);
 }

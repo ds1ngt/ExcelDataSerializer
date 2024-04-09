@@ -144,7 +144,7 @@ public abstract class RecordGenerator
             i++;
         }
         sb.AppendLine("}}");
-        Logger.Instance.LogLine($"Generate Data {dataTable.Name} : {itemMap.Count} items");
+        Logger.Instance.LogLine($"데이터 생성 {dataTable.Name} : ({itemMap.Count})개 항목");
         return sb.ToString();
     }
 

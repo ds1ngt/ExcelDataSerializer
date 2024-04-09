@@ -163,7 +163,7 @@ public abstract class TableInfo
                 return;
 
             if (Header.HasPrimaryKey)
-                Logger.Instance.LogLine($"Primary Index = {Header.PrimaryIndex}");
+                Logger.Instance.LogLine($"Primary = {Header.PrimaryIndex}");
             foreach (var cell in Header.SchemaCells)
             {
                 Logger.Instance.Log($"{cell.ValueType}\t");
