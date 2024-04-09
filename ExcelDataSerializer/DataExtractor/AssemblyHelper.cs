@@ -2,6 +2,7 @@
 using System.Reflection.Emit;
 using System.Runtime.Loader;
 using ExcelDataSerializer.Model;
+using ExcelDataSerializer.Util;
 using MemoryPack;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;

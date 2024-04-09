@@ -1,4 +1,6 @@
-﻿namespace ExcelDataSerializer.Model;
+﻿using ExcelDataSerializer.Util;
+
+namespace ExcelDataSerializer.Model;
 
 public abstract class TableInfo
 {

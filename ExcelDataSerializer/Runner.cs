@@ -1,6 +1,7 @@
 ﻿using ExcelDataSerializer.CodeGenerator;
 using ExcelDataSerializer.ExcelLoader;
 using ExcelDataSerializer.Model;
+using ExcelDataSerializer.Util;
 
 namespace ExcelDataSerializer;
 
@@ -23,18 +24,16 @@ public abstract class Runner
         
         // 데이터 클래스 생성 (DataTable -> C#)
         // var classInfos = GenerateDataClassMemoryPack(info.OutputDir, dataTables);
-        
+        GenerateDataClassRecord(info.CSharpOutputDir, info.DataOutputDir, dataTables);
+
         // 어셈블리 생성 및 테이블 클래스 인스턴스 생성
         // var assemblyInfoMap = AssemblyHelper.CompileDataClassInfos(classInfos);
         // AssemblyHelper.PrintAssemblyInfos(assemblyInfoMap);
 
         // 엑셀파일에서 데이터 추출
         // AssemblyDataInjector.Test(dataTables, assemblyInfoMap);
-
-        // 파일로 저장
-        GenerateDataClassRecord(info.CSharpOutputDir, info.DataOutputDir, dataTables);
     }
-    
+
     private static Dictionary<string, TableInfo.DataTable> ExcelConvert(RunnerInfo info)
     {
         var result = new Dictionary<string, TableInfo.DataTable>();
@@ -86,6 +85,7 @@ public abstract class Runner
 
             var data = RecordGenerator.GenerateRecordData(value);
             Util.Util.SaveToFile(saveDataFilePath, data);
+            Logger.Instance.LogLine();
         }
 
         return result.ToArray();

@@ -1,5 +1,6 @@
 ﻿using ClosedXML.Excel;
 using ExcelDataSerializer.Model;
+using ExcelDataSerializer.Util;
 
 namespace ExcelDataSerializer.ExcelLoader;
 
@@ -20,6 +21,7 @@ public abstract class Loader
         foreach (var sheet in workbook.Worksheets)
         {
             var sheetName = sheet.Name.Replace("_", string.Empty);
+            Logger.Instance.LogLine();
             Logger.Instance.LogLine($" - {sheetName}");
             var range = sheet.RangeUsed();
             if(range == null)
@@ -100,6 +102,8 @@ public abstract class Loader
             result.SchemaCells.Add(schemaCell);
             Logger.Instance.LogLine($"{schemaCell.Name} [ {schemaCell.Index} ] {schemaCell.SchemaTypes} / {schemaCell.ValueType}");
         }
+
+        Logger.Instance.LogLine();
         return result;
     }
 

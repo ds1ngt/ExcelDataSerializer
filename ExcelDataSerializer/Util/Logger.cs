@@ -1,4 +1,4 @@
-﻿namespace ExcelDataSerializer;
+﻿namespace ExcelDataSerializer.Util;
 
 public class Logger : IDisposable
 {
@@ -7,7 +7,7 @@ public class Logger : IDisposable
 
     private FileStream? _fs;
     private StreamWriter? _sw;
-
+    public event Action<string, bool> OnLog = (msg, lineBreak) => { };
     public Logger()
     {
         var path = Path.Combine(Path.GetTempPath(), "ExcelDataSerializer", "Log", $"{DateTime.Now.ToString("yyMMdd_HHmmss")}.log");
@@ -24,6 +24,7 @@ public class Logger : IDisposable
         Console.Write(msg);
         _sw?.Write(msg);
         _sw?.Flush();
+        OnLog.Invoke(msg, false);
     }
 
     public void LogLine(string msg = "", bool printConsole = true)
@@ -32,6 +33,7 @@ public class Logger : IDisposable
             Console.WriteLine(msg);
         _sw?.WriteLine(msg);
         _sw?.Flush();
+        OnLog.Invoke(msg, true);
     }
 
     public void Dispose()

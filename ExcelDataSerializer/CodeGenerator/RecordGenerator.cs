@@ -2,6 +2,7 @@
 using System.Globalization;
 using System.Text;
 using ExcelDataSerializer.Model;
+using ExcelDataSerializer.Util;
 
 namespace ExcelDataSerializer.CodeGenerator;
 
@@ -143,6 +144,7 @@ public abstract class RecordGenerator
             i++;
         }
         sb.AppendLine("}}");
+        Logger.Instance.LogLine($"Generate Data {dataTable.Name} : {itemMap.Count} items");
         return sb.ToString();
     }
 
