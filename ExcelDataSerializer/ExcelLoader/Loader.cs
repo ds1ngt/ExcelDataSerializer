@@ -126,7 +126,8 @@ public abstract class Loader
     private static bool IsArray(string token) => IsContains(SchemaTypes.Array, token);
     private static bool IsList(string[] tokens) => IsContains(SchemaTypes.List, tokens);
     private static bool IsList(string token) => IsContains(SchemaTypes.List, token);
-    private static bool IsEnumGet(string[] tokens) => IsContains(SchemaTypes.EnumGet, tokens);
+
+    private static bool IsEnumGet(string[] tokens) =>  IsContains(SchemaTypes.EnumGet, tokens) || IsContains(SchemaTypes.Enum, tokens);
     private static bool IsEnumGet(string token) => IsContains(SchemaTypes.EnumGet, token);
     private static bool IsContains(SchemaTypes schemaTypes, string[] tokens) => IsContains(schemaTypes.ToString(), tokens);
     private static bool IsContains(SchemaTypes schemaTypes, string token) => IsContains(schemaTypes.ToString(), token);
@@ -157,7 +158,7 @@ public abstract class Loader
             info.SchemaType = SchemaTypes.List;
         else if (IsContains(SchemaTypes.EnumSet, tokens))
             info.SchemaType = SchemaTypes.EnumSet;
-        else if (IsContains(SchemaTypes.EnumGet, tokens))
+        else if (IsEnumGet(tokens))
             info.SchemaType = SchemaTypes.EnumGet;
 
         if (TryGetPrimitive(tokens, out var type))

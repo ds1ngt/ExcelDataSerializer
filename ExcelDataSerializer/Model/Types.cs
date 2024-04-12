@@ -7,6 +7,7 @@ public enum SchemaTypes
     Array,
     List,
     Dictionary,
+    Enum,
     EnumGet,
     EnumSet,
     Custom,
