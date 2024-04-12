@@ -17,8 +17,7 @@
     </Design.DataContext>
     
     <StackPanel>
-        <Border Background="Gainsboro"
-                BorderBrush="Black"
+        <Border BorderBrush="Black"
                 BorderThickness="2"
                 CornerRadius="3"
                 Margin="10" Padding="10">
@@ -38,8 +37,7 @@
                 <TextBox Grid.Row="3" Grid.Column="2" Text="{Binding DataOutputPath}" HorizontalAlignment="Stretch"/>
             </Grid>
         </Border>
-        <Border Background="Gainsboro"
-                BorderBrush="Black"
+        <Border BorderBrush="Black"
                 BorderThickness="2"
                 CornerRadius="3"
                 Margin="10" Padding="10">
@@ -49,8 +47,7 @@
                 <Button Click="OnExecute">실행</Button>
             </DockPanel>
         </Border>
-        <Border Background="Gainsboro"
-                BorderBrush="Black"
+        <Border BorderBrush="Black"
                 BorderThickness="2"
                 CornerRadius="3"
                 Margin="10" Padding="10"

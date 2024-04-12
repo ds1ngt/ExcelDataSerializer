@@ -1,4 +1,7 @@
+using System;
 using System.IO;
+using System.Security.Cryptography;
+using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
@@ -17,54 +20,49 @@ public partial class MainWindow : Window
 
     private void OnOpenExcelFolder(object? sender, RoutedEventArgs e)
     {
-        var path = string.Empty;
-        OpenFolder("Excel 경로 선택", ref path);
-
-        if (DataContext is not MainWindowViewModel vm)
-            return;
-        vm.ExcelPath = path;
+        _ = OpenFolderAsync("Excel 경로 선택", path => {
+            if (DataContext is not MainWindowViewModel vm)
+                return;
+            vm.ExcelPath = path;
+        });
     }
 
     private void OnOpenSaveFolder(object? sender, RoutedEventArgs e)
     {
-        var path = string.Empty;
-        OpenFolder("저장 경로 선택", ref path);
-
-        if (DataContext is not MainWindowViewModel vm)
-            return;
-        vm.SavePath = path;
+        _ = OpenFolderAsync("저장 경로 선택", path => {
+            if (DataContext is not MainWindowViewModel vm)
+                return;
+            vm.SavePath = path;
+        });
     }
 
     private void OnOpenCsOutputFolder(object? sender, RoutedEventArgs e)
     {
-        var path = string.Empty;
-        OpenFolder("C# 저장 경로 선택", ref path);
-
-        if (DataContext is not MainWindowViewModel vm)
-            return;
-        vm.CsOutputPath = path;
+        _ = OpenFolderAsync("C# 저장 경로 선택", path => {
+            if (DataContext is not MainWindowViewModel vm)
+                return;
+            vm.CsOutputPath = path;
+        });
     }
     private void OnOpenDataOutputFolder(object? sender, RoutedEventArgs e)
     {
-        var path = string.Empty;
-        OpenFolder("Data 저장 경로 선택", ref path);
-
-        if (DataContext is not MainWindowViewModel vm)
-            return;
-        vm.DataOutputPath = path;
+        _ = OpenFolderAsync("Data 저장 경로 선택", path =>
+        {
+            if (DataContext is not MainWindowViewModel vm)
+                return;
+            vm.DataOutputPath = path;
+        });
     }
-    private void OpenFolder(string title, ref string path)
+    private async Task<string> OpenFolderAsync(string title, Action<string> onComplete)
     {
-        var result = StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
+        var result = await StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
         {
             Title = title,
             AllowMultiple = false,
-        }).Result;
-
-        if (result.Count == 0)
-            return;
-        
-        path = result[0].Path.AbsolutePath;
+        });
+        var path = result.Count > 0 ? result[0].Path.AbsolutePath : string.Empty;
+        onComplete?.Invoke(path);
+        return path;
     }
 
     private void OnExecute(object? sender, RoutedEventArgs e)
