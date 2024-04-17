@@ -1,4 +1,6 @@
-﻿using System.Text;
+﻿using System;
+using System.Reflection;
+using System.Text;
 using ExcelDataSerializerUI.Models;
 using ReactiveUI;
 
@@ -15,12 +17,29 @@ public class MainWindowViewModel : ViewModelBase
     
     private StringBuilder _logSb = new();
     private string _logStr = string.Empty;
-
+    private string _version;
+    private string _libraryVersion;
     public MainWindowViewModel()
     {
+        UpdateVersionStr();
         LoadSettingInfo();
     }
+
+    private void UpdateVersionStr()
+    {
+        try
+        {
+            _version = Assembly.GetAssembly(typeof(MainWindowViewModel)).GetName().Version.ToString();
+            _libraryVersion = AssemblyName.GetAssemblyName("ExcelDataSerializer.dll").Version.ToString();
+        }
+        catch (Exception _)
+        {
+            _version = string.Empty;
+            _libraryVersion = string.Empty;
+        }
+    }
 #region Binding Property
+    public string Title => $"ExcelDataSerializerUI v{_version}, (Core: v{_libraryVersion})";
     public string ExcelPath
     {
         get => _excelPath;

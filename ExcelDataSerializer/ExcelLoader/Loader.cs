@@ -167,7 +167,7 @@ public abstract class Loader
                 info.SchemaType = SchemaTypes.Primitive;
             info.DataType = type.GetTypeStr();
         }
-        else if (TryGetEnum(tokens, out var enumTypeStr))
+        else if (TryGetEnum(tokens, info.IsPrimary, out var enumTypeStr))
         {
             info.DataType = enumTypeStr;
         }
@@ -191,17 +191,28 @@ public abstract class Loader
         return false;
     }
 
-    private static bool TryGetEnum(string[] tokens, out string enumTypeStr)
+    private static bool TryGetEnum(string[] tokens, bool isPrimary, out string enumTypeStr)
     {
         enumTypeStr = string.Empty;
 
-        if (tokens.Length < 2)
-            return false;
-        if (tokens[Constant.SchemaCellIdx].ToLower() != Constant.EnumGet.ToLower())
+        if (!IsValid())
             return false;
 
-        enumTypeStr = tokens[Constant.TypeCellIdx];
+        var schemaIdx = Constant.SchemaCellIdx;
+        var typeIdx = Constant.TypeCellIdx;
+        
+        if (isPrimary)
+        {
+            schemaIdx++;
+            typeIdx++;
+        }
+        if (tokens[schemaIdx].ToLower() != Constant.EnumGet.ToLower())
+            return false;
+
+        enumTypeStr = tokens[typeIdx];
         return true;
+
+        bool IsValid() => isPrimary ? tokens.Length >= 3 : tokens.Length >= 2;
     }
     private static string GetCustomDataTypeStr(string[] tokens)
     {
