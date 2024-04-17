@@ -15,7 +15,6 @@ public class SettingInfo
 
     public SettingInfo()
     {
-        Console.WriteLine($"Hello, Setting Info");
         Console.WriteLine(_saveFile);
     }
     public void Save()

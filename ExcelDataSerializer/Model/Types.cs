@@ -3,6 +3,7 @@
 public enum SchemaTypes
 {
     None,
+    Primary,
     Primitive,
     Array,
     List,

@@ -8,7 +8,7 @@
         x:DataType="vm:MainWindowViewModel"
         SizeToContent="WidthAndHeight"
         Icon="/Assets/avalonia-logo.ico"
-        Title="ExcelDataSerializerUI">
+        Title="{Binding Title}">
 
     <Design.DataContext>
         <!-- This only sets the DataContext for the previewer in an IDE,
