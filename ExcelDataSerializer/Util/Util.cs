@@ -12,7 +12,7 @@ public abstract class Util
     public static string GetValidName(string name)
     {
         if (!IsValidName(name)) return string.Empty;
-        return name.Replace("_", string.Empty);
+        return TrimUnderscore(name);
     }
 
     public static void SaveToFile(string savePath, string text)

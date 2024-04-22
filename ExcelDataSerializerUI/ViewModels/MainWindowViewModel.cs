@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Reflection;
 using System.Text;
+using ExcelDataSerializer;
 using ExcelDataSerializerUI.Models;
 using ReactiveUI;
 
@@ -30,7 +31,7 @@ public class MainWindowViewModel : ViewModelBase
         try
         {
             _version = Assembly.GetAssembly(typeof(MainWindowViewModel)).GetName().Version.ToString();
-            _libraryVersion = AssemblyName.GetAssemblyName("ExcelDataSerializer.dll").Version.ToString();
+            _libraryVersion = Assembly.GetAssembly(typeof(Runner)).GetName().Version.ToString();
         }
         catch (Exception _)
         {
