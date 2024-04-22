@@ -51,7 +51,7 @@ public abstract class Loader
         {
             Name = name,
             Header = header,
-            Data = CreateDataRows(range, validColumnIndices),
+            Data = CreateDataRows(header, range, validColumnIndices),
             TableType = GetTableType(header),
         };
         return result;
@@ -169,7 +169,8 @@ public abstract class Loader
         }
         else if (TryGetEnum(tokens, info.IsPrimary, out var enumTypeStr))
         {
-            info.DataType = enumTypeStr;
+            var enumName = Util.Util.GetValidName(enumTypeStr);
+            info.DataType = enumName;
         }
         else
         {
@@ -226,7 +227,7 @@ public abstract class Loader
         return string.Empty;
     }
     
-    private static TableInfo.DataRow[] CreateDataRows(IXLRange range, IEnumerable<int> validColumIndices)
+    private static TableInfo.DataRow[] CreateDataRows(TableInfo.Header header, IXLRange range, IEnumerable<int> validColumIndices)
     {
         var rows = new List<TableInfo.DataRow>();
         var cells = new List<TableInfo.DataCell>();
@@ -241,7 +242,7 @@ public abstract class Loader
                 cells.Add(new TableInfo.DataCell
                 {
                     Index = idx,
-                    Value = value,
+                    Value = GetDataRowValue(header, idx, value),
                 });
             }
             rows.Add(new TableInfo.DataRow
@@ -252,6 +253,20 @@ public abstract class Loader
         return rows.ToArray();
     }
 
+    private static string GetDataRowValue(TableInfo.Header header, int idx, string value)
+    {
+        var schemaIndex = header.SchemaCells.FindIndex(item => item.Index == idx);
+        switch (header.SchemaCells[schemaIndex].SchemaTypes)
+        {
+            case SchemaTypes.Enum:
+            case SchemaTypes.EnumGet:
+            case SchemaTypes.EnumSet:
+                return Util.Util.GetValidName(value);
+                break;
+            default:
+                return value;
+        }
+    }
     private static TableInfo.TableType GetTableType(TableInfo.Header header)
     {
         if (header.HasPrimaryKey)
