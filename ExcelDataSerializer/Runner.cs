@@ -1,4 +1,5 @@
-﻿using ExcelDataSerializer.CodeGenerator;
+﻿using Cysharp.Threading.Tasks;
+using ExcelDataSerializer.CodeGenerator;
 using ExcelDataSerializer.ExcelLoader;
 using ExcelDataSerializer.Model;
 using ExcelDataSerializer.Util;
@@ -7,7 +8,8 @@ namespace ExcelDataSerializer;
 
 public abstract class Runner
 {
-    public static void Execute(RunnerInfo info)
+    public static void Execute(RunnerInfo info) => ExecuteAsync(info).Forget();
+    public static async UniTask ExecuteAsync(RunnerInfo info)
     {
         if (!info.Validate())
         {
@@ -20,7 +22,7 @@ public abstract class Runner
         Logger.Instance.LogLine($"> 총 {info.XlsxFiles.Count} 워크시트");
 
         // 엑셀 변환 준비 (Excel -> DataTable)
-        var dataTables = ExcelConvert(info);
+        var dataTables = await ExcelConvertAsync(info);
         
         // 데이터 클래스 생성 (DataTable -> C#)
         // var classInfos = GenerateDataClassMemoryPack(info.OutputDir, dataTables);
@@ -34,12 +36,12 @@ public abstract class Runner
         // AssemblyDataInjector.Test(dataTables, assemblyInfoMap);
     }
 
-    private static Dictionary<string, TableInfo.DataTable> ExcelConvert(RunnerInfo info)
+    private static async UniTask<Dictionary<string, TableInfo.DataTable>> ExcelConvertAsync(RunnerInfo info)
     {
         var result = new Dictionary<string, TableInfo.DataTable>();
         foreach (var filePath in info.XlsxFiles)
         {
-            var dataTables = Loader.LoadXls(filePath);
+            var dataTables = await Loader.LoadXlsAsync(filePath);
             foreach (var table in dataTables)
             {
                 if (!result.TryAdd(table.Name, table))
