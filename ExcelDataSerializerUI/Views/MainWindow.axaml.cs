@@ -1,10 +1,10 @@
 using System;
 using System.IO;
-using System.Security.Cryptography;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
+using Cysharp.Threading.Tasks;
 using ExcelDataSerializer.Model;
 using ExcelDataSerializer.Util;
 using ExcelDataSerializerUI.ViewModels;
@@ -60,12 +60,13 @@ public partial class MainWindow : Window
             Title = title,
             AllowMultiple = false,
         });
-        var path = result.Count > 0 ? result[0].Path.AbsolutePath : string.Empty;
+
+        var path = result.Count > 0 ? Uri.UnescapeDataString(result[0].Path.AbsolutePath): string.Empty;
         onComplete?.Invoke(path);
         return path;
     }
 
-    private void OnExecute(object? sender, RoutedEventArgs e)
+    private async void OnExecute(object? sender, RoutedEventArgs e)
     {
         if (DataContext is not MainWindowViewModel vm)
             return;
@@ -78,15 +79,15 @@ public partial class MainWindow : Window
         Logger.Instance.OnLog -= OnLog;
         Logger.Instance.OnLog += OnLog;
 
-        var excelFiles = Directory.GetFiles(vm.ExcelPath, "*.xlsx");
+        var excelFiles = Directory.GetFiles(vm.ExcelPath, "*.xlsx", SearchOption.AllDirectories);
         var csOutput = vm.CsOutputPath;
         var dataOutput = vm.DataOutputPath;
-        
+
         var runnerInfo = new RunnerInfo();
         runnerInfo.AddExcelFiles(excelFiles);
         runnerInfo.SetOutputDirectory(csOutput, dataOutput);
         
-        ExcelDataSerializer.Runner.Execute(runnerInfo);
+        await ExcelDataSerializer.Runner.ExecuteAsync(runnerInfo);
     }
 
     private void OnLog(string msg, bool lineBreak)
