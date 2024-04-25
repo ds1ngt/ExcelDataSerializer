@@ -249,29 +249,32 @@ public abstract class RecordGenerator
                 return short.TryParse(value, out var s) ? s.ToString() : default(short).ToString();
             case Types.UShort:
             case Types.UInt16:
-                return ushort.TryParse(value, out var us) ? us.ToString() : default(short).ToString();
+                return ushort.TryParse(value, out var us) ? us.ToString() : default(ushort).ToString();
             case Types.Int:
             case Types.Int32:
                 return int.TryParse(value, out var i) ? i.ToString() : default(int).ToString();
             case Types.UInt:
             case Types.UInt32:
-                return uint.TryParse(value, out var ui) ? ui.ToString() : default(short).ToString();
+                return uint.TryParse(value, out var ui) ? ui.ToString() : default(uint).ToString();
             case Types.Long:
             case Types.Int64:
-                return long.TryParse(value, out var l) ? l.ToString() : default(short).ToString();
+                return long.TryParse(value, out var l) ? l.ToString() : default(long).ToString();
             case Types.ULong:
             case Types.UInt64:
-                return ulong.TryParse(value, out var ul) ? ul.ToString() : default(short).ToString();
+                return ulong.TryParse(value, out var ul) ? ul.ToString() : default(ulong).ToString();
             case Types.Float:
             case Types.Single:
-                return float.TryParse(value, out var f) ? f.ToString(CultureInfo.InvariantCulture) : default(short).ToString();
+                return float.TryParse(value, out var f) ? f.ToString(CultureInfo.InvariantCulture) : default(float).ToString(CultureInfo.InvariantCulture);
             case Types.Double:
-                return double.TryParse(value, out var d) ? d.ToString(CultureInfo.InvariantCulture) : default(short).ToString();
+                return double.TryParse(value, out var d) ? d.ToString(CultureInfo.InvariantCulture) : default(double).ToString(CultureInfo.InvariantCulture);
             case Types.Decimal:
-                return decimal.TryParse(value, out var dec) ? dec.ToString(CultureInfo.InvariantCulture) : default(short).ToString();
+                return decimal.TryParse(value, out var dec) ? dec.ToString(CultureInfo.InvariantCulture) : default(decimal).ToString(CultureInfo.InvariantCulture);
             case Types.Bool:
             case Types.Boolean:
-                return bool.TryParse(value, out var bo) ? bo.ToString() : default(short).ToString();
+            {
+                var valueStr = bool.TryParse(value, out var bo) ? bo.ToString() : default(bool).ToString();
+                return $"\"{valueStr}\"";
+            }
             case Types.String:
                 return $"\"{value}\"";
             case Types.Vector3:
