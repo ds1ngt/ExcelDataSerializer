@@ -1,9 +1,11 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
+using Avalonia.Threading;
 using Cysharp.Threading.Tasks;
 using ExcelDataSerializer.Model;
 using ExcelDataSerializer.Util;
@@ -13,6 +15,15 @@ namespace ExcelDataSerializerUI.Views;
 
 public partial class MainWindow : Window
 {
+    private struct LogMessageInfo
+    {
+        public string Message;
+        public bool LineBreak;
+    }
+    
+    private UniTask<Task>? _workTask;
+    private UniTask<Task>? _uiInvokeTask;
+    private Queue<LogMessageInfo> _infoQueue = new();
     public MainWindow()
     {
         InitializeComponent();
@@ -68,6 +79,9 @@ public partial class MainWindow : Window
 
     private async void OnExecute(object? sender, RoutedEventArgs e)
     {
+        if (_workTask.HasValue)
+            return;
+
         if (DataContext is not MainWindowViewModel vm)
             return;
 
@@ -86,11 +100,38 @@ public partial class MainWindow : Window
         var runnerInfo = new RunnerInfo();
         runnerInfo.AddExcelFiles(excelFiles);
         runnerInfo.SetOutputDirectory(csOutput, dataOutput);
-        
-        await ExcelDataSerializer.Runner.ExecuteAsync(runnerInfo);
+
+        _workTask = UniTask.Run(async () =>
+        {
+            await ExcelDataSerializer.Runner.ExecuteAsync(runnerInfo);
+            _workTask = null;
+        });
+        _uiInvokeTask ??= UniTask.Run(async () => await UpdateUiAsync());
     }
 
+    private async UniTask UpdateUiAsync()
+    {
+        while (true)
+        {
+            if (_infoQueue.TryPeek(out var message))
+            {
+                Dispatcher.UIThread.Invoke(() => OnLogMessage(message.Message, message.LineBreak));
+                _infoQueue.Dequeue();
+            }
+            await UniTask.Yield();
+        }
+    }
+    
     private void OnLog(string msg, bool lineBreak)
+    {
+        _infoQueue.Enqueue(new LogMessageInfo { Message = msg, LineBreak = lineBreak});
+        // UniTask.Run(() =>
+        // {
+        //     Dispatcher.UIThread.Invoke(() => OnLogMessage(msg, lineBreak));
+        // });
+    }
+
+    private void OnLogMessage(string msg, bool lineBreak)
     {
         if (DataContext is not MainWindowViewModel vm)
             return;

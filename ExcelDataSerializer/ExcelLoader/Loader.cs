@@ -57,7 +57,6 @@ public abstract class Loader
                 continue;
 
             Logger.Instance.LogLine(sheetName);
-            continue;
             var dataTable = await CreateDataTableAsync(sheetName, range);
             if (dataTable == null) continue;
 
@@ -264,26 +263,24 @@ public abstract class Loader
         var rangeRows = range.Rows(DATA_BEGIN_ROW, range.RowCount());
         var uniTaskRangeRows = rangeRows.ToUniTaskAsyncEnumerable();
 
-        int count = 0;
         await foreach (var row in uniTaskRangeRows)
         {
-            // cells.Clear();
-            // foreach (var idx in validColumIndices)
-            // {
-            //     if (!row.Cell(idx).TryGetValue<string>(out var value))
-            //         continue;
-            //
-            //     cells.Add(new TableInfo.DataCell
-            //     {
-            //         Index = idx,
-            //         Value = GetDataRowValue(header, idx, value),
-            //     });
-            // }
-            // rows.Add(new TableInfo.DataRow
-            // {
-            //     DataCells = cells.ToArray()
-            // });
-            Logger.Instance.LogLine($"- ({count++}/{rangeRows.Count()}) - {name}");
+            cells.Clear();
+            foreach (var idx in validColumIndices)
+            {
+                if (!row.Cell(idx).TryGetValue<string>(out var value))
+                    continue;
+            
+                cells.Add(new TableInfo.DataCell
+                {
+                    Index = idx,
+                    Value = GetDataRowValue(header, idx, value),
+                });
+            }
+            rows.Add(new TableInfo.DataRow
+            {
+                DataCells = cells.ToArray()
+            });
         }
         return rows.ToArray();
     }
