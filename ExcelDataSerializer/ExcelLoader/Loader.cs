@@ -80,7 +80,7 @@ public abstract class Loader
         {
             Name = name,
             Header = header,
-            Data = await CreateDataRowsAsync(name, header, range, validColumnIndices),
+            Data = await CreateDataRowsAsync(header, range, validColumnIndices),
             TableType = GetTableType(header),
         };
         return result;
@@ -256,34 +256,31 @@ public abstract class Loader
         return string.Empty;
     }
     
-    private static async UniTask<TableInfo.DataRow[]> CreateDataRowsAsync(string name, TableInfo.Header header,
-        IXLRange range, IEnumerable<int> validColumIndices)
+    private static async UniTask<TableInfo.DataRow[]> CreateDataRowsAsync(TableInfo.Header header, IXLRange range, IEnumerable<int> validColumIndices)
     {
         var rows = new List<TableInfo.DataRow>();
         var cells = new List<TableInfo.DataCell>();
         var rangeRows = range.Rows(DATA_BEGIN_ROW, range.RowCount());
         var uniTaskRangeRows = rangeRows.ToUniTaskAsyncEnumerable();
 
-        int count = 0;
         await foreach (var row in uniTaskRangeRows)
         {
-            // cells.Clear();
-            // foreach (var idx in validColumIndices)
-            // {
-            //     if (!row.Cell(idx).TryGetValue<string>(out var value))
-            //         continue;
-            //
-            //     cells.Add(new TableInfo.DataCell
-            //     {
-            //         Index = idx,
-            //         Value = GetDataRowValue(header, idx, value),
-            //     });
-            // }
-            // rows.Add(new TableInfo.DataRow
-            // {
-            //     DataCells = cells.ToArray()
-            // });
-            Logger.Instance.LogLine($"- ({count++}/{rangeRows.Count()}) - {name}");
+            cells.Clear();
+            foreach (var idx in validColumIndices)
+            {
+                if (!row.Cell(idx).TryGetValue<string>(out var value))
+                    continue;
+            
+                cells.Add(new TableInfo.DataCell
+                {
+                    Index = idx,
+                    Value = GetDataRowValue(header, idx, value),
+                });
+            }
+            rows.Add(new TableInfo.DataRow
+            {
+                DataCells = cells.ToArray()
+            });
         }
         return rows.ToArray();
     }
