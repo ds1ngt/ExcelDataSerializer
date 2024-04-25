@@ -13,7 +13,7 @@ public abstract class RecordGenerator
     private static readonly string _dataTableSuffix = "DataTable";
 
     private static TableInfo.DataTable _enumTable;
-    public static void SetEnumTable(TableInfo.DataTable enumTable) => _enumTable = enumTable;
+    public static void SetEnumTable(TableInfo.DataTable enumTable) => _enumTable = enumTable ?? new TableInfo.DataTable();
 
 #region Data Class
     public static DataClassInfo? GenerateDataClass(TableInfo.DataTable dataTable)
@@ -269,6 +269,7 @@ public abstract class RecordGenerator
                 return double.TryParse(value, out var d) ? d.ToString(CultureInfo.InvariantCulture) : default(short).ToString();
             case Types.Decimal:
                 return decimal.TryParse(value, out var dec) ? dec.ToString(CultureInfo.InvariantCulture) : default(short).ToString();
+            case Types.Bool:
             case Types.Boolean:
                 return bool.TryParse(value, out var bo) ? bo.ToString() : default(short).ToString();
             case Types.String:

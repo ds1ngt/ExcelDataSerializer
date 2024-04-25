@@ -21,25 +21,7 @@ public abstract class Loader
         await using var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
         var dataTables = new List<TableInfo.DataTable>();
         await LoadWorkbookAsync(fs, dataTables);
-
-        // var workbook = new XLWorkbook(fs);
-        //
-        // foreach (var sheet in workbook.Worksheets)
-        // {
-        //     var sheetName = sheet.Name.Replace("_", string.Empty);
-        //     Logger.Instance.LogLine();
-        //     Logger.Instance.LogLine($" - {sheetName}");
-        //     var range = sheet.RangeUsed();
-        //     if(range == null)
-        //         continue;
-        //
-        //     var dataTable = CreateDataTable(sheetName, range);
-        //     if (dataTable == null) continue;
-        //
-        //     // dataTable.PrintHeader();
-        //     // dataTable.PrintData();
-        //     dataTables.Add(dataTable);
-        // }
+        
         return dataTables;
     }
 
@@ -108,7 +90,7 @@ public abstract class Loader
             if (string.IsNullOrWhiteSpace(schemaText))
                 continue;
 
-            var tokens = schemaText.Split('/');
+            var tokens = schemaText.Split('/').Select(token => token.Trim()).ToArray();
             var schemaInfo = ParseSchemaInfo(tokens);
             var cellName = name.GetValidName();
 
@@ -145,20 +127,19 @@ public abstract class Loader
         var value = Util.Util.GetValidName(cellValue);
         return Util.Util.IsValidName(value);
     }
-    private static bool IsPrimary(string[] tokens) => IsContains(Constant.Primary, tokens);
+    private static bool IsPrimary(IEnumerable<string> tokens) => IsContains(Constant.Primary, tokens);
     private static bool IsPrimary(string token) => IsContains(Constant.Primary, token);
-    private static bool IsContainer(string[] tokens) => IsArray(tokens) || IsList(tokens);
+    private static bool IsContainer(IEnumerable<string> tokens) => IsArray(tokens) || IsList(tokens);
     private static bool IsContainer(string token) => IsArray(token) || IsList(token);
-    private static bool IsArray(string[] tokens) => IsContains(SchemaTypes.Array, tokens);
+    private static bool IsArray(IEnumerable<string> tokens) => IsContains(SchemaTypes.Array, tokens);
     private static bool IsArray(string token) => IsContains(SchemaTypes.Array, token);
-    private static bool IsList(string[] tokens) => IsContains(SchemaTypes.List, tokens);
+    private static bool IsList(IEnumerable<string> tokens) => IsContains(SchemaTypes.List, tokens);
     private static bool IsList(string token) => IsContains(SchemaTypes.List, token);
-
-    private static bool IsEnumGet(string[] tokens) =>  IsContains(SchemaTypes.EnumGet, tokens) || IsContains(SchemaTypes.Enum, tokens);
+    private static bool IsEnumGet(IEnumerable<string> tokens) =>  IsContains(SchemaTypes.EnumGet, tokens) || IsContains(SchemaTypes.Enum, tokens);
     private static bool IsEnumGet(string token) => IsContains(SchemaTypes.EnumGet, token);
-    private static bool IsContains(SchemaTypes schemaTypes, string[] tokens) => IsContains(schemaTypes.ToString(), tokens);
+    private static bool IsContains(SchemaTypes schemaTypes, IEnumerable<string> tokens) => IsContains(schemaTypes.ToString(), tokens);
     private static bool IsContains(SchemaTypes schemaTypes, string token) => IsContains(schemaTypes.ToString(), token);
-    private static bool IsContains(string schemaTypeStr, string[] tokens)
+    private static bool IsContains(string schemaTypeStr, IEnumerable<string> tokens)
     {
         var compare = schemaTypeStr.ToLower();
         return tokens.Any(token => compare == token.ToLower());
@@ -176,7 +157,7 @@ public abstract class Loader
     {
         var info = new SchemaInfo
         {
-            IsPrimary = IsPrimary(tokens),
+            IsPrimary = IsPrimary(tokens)
         };
 
         if (IsContains(SchemaTypes.Array, tokens))
@@ -207,7 +188,7 @@ public abstract class Loader
         }
         return info;
     }
-    private static bool TryGetPrimitive(string[] tokens, out Types type)
+    private static bool TryGetPrimitive(IEnumerable<string> tokens, out Types type)
     {
         type = Types.Byte;
         foreach (var token in tokens)
@@ -242,7 +223,7 @@ public abstract class Loader
 
         bool IsValid() => isPrimary ? tokens.Length >= 3 : tokens.Length >= 2;
     }
-    private static string GetCustomDataTypeStr(string[] tokens)
+    private static string GetCustomDataTypeStr(IEnumerable<string> tokens)
     {
         foreach (var token in tokens)
         {

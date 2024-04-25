@@ -33,6 +33,7 @@ public enum Types
     Single,         // 데이터 파싱에 사용
     Double,
     Decimal,
+    Bool,           // 데이터 파싱에 사용
     Boolean,
     String,
     
@@ -127,7 +128,9 @@ public static class TypesExtension
                 return "System.Single";
             case Types.Double: return "System.Double";
             case Types.Decimal: return "System.Decimal";
-            case Types.Boolean: return "System.Boolean";
+            case Types.Bool:
+            case Types.Boolean:
+                return "System.Boolean";
             case Types.String: return "System.String";
             case Types.Vector3: return "UnityEngine.Vector3";
             case Types.Quaternion: return "UnityEngine.Quaternion";
@@ -166,6 +169,7 @@ public static class TypesExtension
                 return "double";
             case Types.Decimal:
                 return "decimal";
+            case Types.Bool:
             case Types.Boolean:
                 return "bool";
             case Types.String:

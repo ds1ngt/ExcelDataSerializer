@@ -283,6 +283,7 @@ public abstract class AssemblyDataInjector
                     return v;
             }
                 break;
+            case Types.Bool:
             case Types.Boolean:
             {
                 if (bool.TryParse(value, out var v))
