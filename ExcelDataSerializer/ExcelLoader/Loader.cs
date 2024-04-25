@@ -1,4 +1,6 @@
 ﻿using ClosedXML.Excel;
+using Cysharp.Threading.Tasks;
+using Cysharp.Threading.Tasks.Linq;
 using ExcelDataSerializer.Model;
 using ExcelDataSerializer.Util;
 
@@ -9,15 +11,42 @@ public abstract class Loader
     private const int HEADER_NAME_ROW = 1;
     private const int SCHEMA_ROW = 2;
     private const int DATA_BEGIN_ROW = 3;
-    public static IEnumerable<TableInfo.DataTable> LoadXls(string path)
+    public static async UniTask<IEnumerable<TableInfo.DataTable>> LoadXlsAsync(string path)
     {
         if (string.IsNullOrWhiteSpace(path))
             return Array.Empty<TableInfo.DataTable>();
 
         Logger.Instance.LogLine($"Excel 로드 = {path}");
-        using var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+
+        await using var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
         var dataTables = new List<TableInfo.DataTable>();
+        await LoadWorkbookAsync(fs, dataTables);
+
+        // var workbook = new XLWorkbook(fs);
+        //
+        // foreach (var sheet in workbook.Worksheets)
+        // {
+        //     var sheetName = sheet.Name.Replace("_", string.Empty);
+        //     Logger.Instance.LogLine();
+        //     Logger.Instance.LogLine($" - {sheetName}");
+        //     var range = sheet.RangeUsed();
+        //     if(range == null)
+        //         continue;
+        //
+        //     var dataTable = CreateDataTable(sheetName, range);
+        //     if (dataTable == null) continue;
+        //
+        //     // dataTable.PrintHeader();
+        //     // dataTable.PrintData();
+        //     dataTables.Add(dataTable);
+        // }
+        return dataTables;
+    }
+
+    private static async UniTask LoadWorkbookAsync(FileStream fs, List<TableInfo.DataTable> dataTables)
+    {
         var workbook = new XLWorkbook(fs);
+
         foreach (var sheet in workbook.Worksheets)
         {
             var sheetName = sheet.Name.Replace("_", string.Empty);
@@ -27,19 +56,19 @@ public abstract class Loader
             if(range == null)
                 continue;
 
-            var dataTable = CreateDataTable(sheetName, range);
+            Logger.Instance.LogLine(sheetName);
+            continue;
+            var dataTable = await CreateDataTableAsync(sheetName, range);
             if (dataTable == null) continue;
 
             // dataTable.PrintHeader();
             // dataTable.PrintData();
             dataTables.Add(dataTable);
         }
-        return dataTables;
     }
-
-    private static TableInfo.DataTable? CreateDataTable(string name, IXLRange range)
+    private static async UniTask<TableInfo.DataTable?> CreateDataTableAsync(string name, IXLRange range)
     {
-        if (string.IsNullOrWhiteSpace(name))
+        if (!Util.Util.IsValidName(name))
             return null;
 
         var header = CreateHeaderRow(range);
@@ -51,7 +80,7 @@ public abstract class Loader
         {
             Name = name,
             Header = header,
-            Data = CreateDataRows(header, range, validColumnIndices),
+            Data = await CreateDataRowsAsync(name, header, range, validColumnIndices),
             TableType = GetTableType(header),
         };
         return result;
@@ -227,28 +256,34 @@ public abstract class Loader
         return string.Empty;
     }
     
-    private static TableInfo.DataRow[] CreateDataRows(TableInfo.Header header, IXLRange range, IEnumerable<int> validColumIndices)
+    private static async UniTask<TableInfo.DataRow[]> CreateDataRowsAsync(string name, TableInfo.Header header,
+        IXLRange range, IEnumerable<int> validColumIndices)
     {
         var rows = new List<TableInfo.DataRow>();
         var cells = new List<TableInfo.DataCell>();
-        foreach (var row in range.Rows(DATA_BEGIN_ROW, range.RowCount()))
-        {
-            cells.Clear();
-            foreach (var idx in validColumIndices)
-            {
-                if (!row.Cell(idx).TryGetValue<string>(out var value))
-                    continue;
+        var rangeRows = range.Rows(DATA_BEGIN_ROW, range.RowCount());
+        var uniTaskRangeRows = rangeRows.ToUniTaskAsyncEnumerable();
 
-                cells.Add(new TableInfo.DataCell
-                {
-                    Index = idx,
-                    Value = GetDataRowValue(header, idx, value),
-                });
-            }
-            rows.Add(new TableInfo.DataRow
-            {
-                DataCells = cells.ToArray()
-            });
+        int count = 0;
+        await foreach (var row in uniTaskRangeRows)
+        {
+            // cells.Clear();
+            // foreach (var idx in validColumIndices)
+            // {
+            //     if (!row.Cell(idx).TryGetValue<string>(out var value))
+            //         continue;
+            //
+            //     cells.Add(new TableInfo.DataCell
+            //     {
+            //         Index = idx,
+            //         Value = GetDataRowValue(header, idx, value),
+            //     });
+            // }
+            // rows.Add(new TableInfo.DataRow
+            // {
+            //     DataCells = cells.ToArray()
+            // });
+            Logger.Instance.LogLine($"- ({count++}/{rangeRows.Count()}) - {name}");
         }
         return rows.ToArray();
     }
