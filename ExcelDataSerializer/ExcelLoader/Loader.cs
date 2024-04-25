@@ -3,6 +3,7 @@ using Cysharp.Threading.Tasks;
 using Cysharp.Threading.Tasks.Linq;
 using ExcelDataSerializer.Model;
 using ExcelDataSerializer.Util;
+using XlsxHelper;
 
 namespace ExcelDataSerializer.ExcelLoader;
 
@@ -17,7 +18,6 @@ public abstract class Loader
             return Array.Empty<TableInfo.DataTable>();
 
         Logger.Instance.LogLine($"Excel 로드 = {path}");
-
         await using var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
         var dataTables = new List<TableInfo.DataTable>();
         await LoadWorkbookAsync(fs, dataTables);
@@ -27,25 +27,88 @@ public abstract class Loader
 
     private static async UniTask LoadWorkbookAsync(FileStream fs, List<TableInfo.DataTable> dataTables)
     {
-        var workbook = new XLWorkbook(fs);
-
+        using var workbook = XlsxReader.OpenWorkbook(fs, false);
         foreach (var sheet in workbook.Worksheets)
         {
-            var sheetName = sheet.Name.Replace("_", string.Empty);
-            Logger.Instance.LogLine();
-            Logger.Instance.LogLine($" - {sheetName}");
-            var range = sheet.RangeUsed();
-            if(range == null)
-                continue;
-
-            var dataTable = await CreateDataTableAsync(sheetName, range);
+            var dataTable = await CreateDataTableAsync(sheet);
             if (dataTable == null) continue;
-
+        
             // dataTable.PrintHeader();
             // dataTable.PrintData();
             dataTables.Add(dataTable);
         }
+        
+        // var workbook = new XLWorkbook(fs);   
+        // foreach (var sheet in workbook.Worksheets)
+        // {
+        //     var sheetName = sheet.Name.Replace("_", string.Empty);
+        //     Logger.Instance.LogLine();
+        //     Logger.Instance.LogLine($" - {sheetName}");
+        //     var range = sheet.RangeUsed();
+        //     if(range == null)
+        //         continue;
+        //
+        //     var dataTable = await CreateDataTableAsync(sheetName, range);
+        //     if (dataTable == null) continue;
+        //
+        //     // dataTable.PrintHeader();
+        //     // dataTable.PrintData();
+        //     dataTables.Add(dataTable);
+        // }
     }
+
+    private static async Task<TableInfo.DataTable?> CreateDataTableAsync(Worksheet sheet)
+    {
+        var sheetName = sheet.Name.Replace("_", string.Empty);
+        if (!Util.Util.IsValidName(sheetName))
+            return null;
+
+        Console.WriteLine($"READ TABLE = {sheetName}");
+
+        var dic = sheet.ToDictionary(row => row.RowNumber, row => row.Cells);
+        foreach (var key in dic.Keys)
+        {
+            Console.WriteLine($"[{key}] = {dic[key].Length}");
+        }
+        // var cells = sheet
+        //     .Select(row => row.Cells)
+        //     .Where(row => !row[0].CellValue?.StartsWith('#') ?? false)
+        //     .ToArray();
+        //
+        // foreach (var cell in cells[0])
+        // {
+        //     Console.Write($"{cell.CellValue} ");
+        // }
+        // Console.WriteLine();
+        // Console.WriteLine($"READ TABLE = {sheetName} ... {cells.Length} x {cells[0].Length} Done");
+
+        // TableInfo.Header? header;
+        // var rowIdx = 1;
+        // foreach (var row in sheet)
+        // {
+        //     switch (rowIdx)
+        //     {
+        //         case HEADER_NAME_ROW:
+        //             header = CreateHeaderRow(row);
+        //             break;
+        //         case SCHEMA_ROW:
+        //             break;
+        //         default:
+        //             break;
+        //     }
+        //
+        //     rowIdx++;
+        // }
+
+        await UniTask.CompletedTask;
+        return null;
+    }
+
+    private static TableInfo.Header? CreateHeaderRow(Row range)
+    {
+        return null;
+    }
+
     private static async UniTask<TableInfo.DataTable?> CreateDataTableAsync(string name, IXLRange range)
     {
         if (!Util.Util.IsValidName(name))

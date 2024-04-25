@@ -4,8 +4,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <LangVersion>11</LangVersion>
-    <TargetFramework>netstandard2.1</TargetFramework>
     <AssemblyVersion>0.1.4</AssemblyVersion>
+    <TargetFramework>net8.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
@@ -17,5 +17,9 @@
     <PackageReference Include="System.CodeDom" Version="9.0.0-preview.2.24128.5" />
     <PackageReference Include="System.Runtime.Loader" Version="4.3.0" />
     <PackageReference Include="UniTask" Version="2.5.4" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
+    <PackageReference Include="XlsxHelper" Version="2.1.0" />
   </ItemGroup>
 </Project>
