@@ -56,7 +56,6 @@ public abstract class Loader
             if(range == null)
                 continue;
 
-            Logger.Instance.LogLine(sheetName);
             var dataTable = await CreateDataTableAsync(sheetName, range);
             if (dataTable == null) continue;
 
