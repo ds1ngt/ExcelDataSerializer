@@ -1,4 +1,5 @@
 ﻿using Cysharp.Threading.Tasks;
+using DocumentFormat.OpenXml.Drawing.Charts;
 using ExcelDataSerializer.CodeGenerator;
 using ExcelDataSerializer.ExcelLoader;
 using ExcelDataSerializer.Model;
@@ -51,13 +52,59 @@ public abstract class Runner
             foreach (var table in dataTables)
             {
                 if (!result.TryAdd(table.Name, table))
-                    Logger.Instance.LogLine($"ExcelConvert : 이름 중복!!! {filePath} : {table.Name}");
+                {
+                    if (table.Name == Constant.Enum)
+                    {
+                        var enumTable = result[table.Name];
+                        if (TryMergeEnumSheet(enumTable, table, out var merged))
+                            result[table.Name] = merged;
+                    }
+                    else
+                        Logger.Instance.LogLine($"ExcelConvert : 이름 중복!!! {filePath} : {table.Name}");
+                }
             }
         }
 
         return result;
     }
 
+    private static bool TryMergeEnumSheet(TableInfo.DataTable left, TableInfo.DataTable right, out TableInfo.DataTable merged)
+    {
+        merged = default!;
+
+        if (left.TableType != TableInfo.TableType.Enum || right.TableType != TableInfo.TableType.Enum)
+            return false;
+        if (left.Header == null || right.Header == null)
+            return false;
+
+        merged = new TableInfo.DataTable
+        {
+            Name = left.Name,
+            TableType = TableInfo.TableType.Enum,
+            Header = left.Header
+        };
+
+        var lastIndex = left.Header.SchemaCells
+            .Select(cell => cell.Index)
+            .MaxBy(idx => idx) + 1;
+
+        var schemaCells = right.Header.SchemaCells.Select(cell =>
+        {
+            cell.Index += lastIndex;
+            return cell;
+        });
+        merged.Header.SchemaCells.AddRange(schemaCells);
+
+        var dataCells = right.Data
+            .Select(row =>
+            {
+                foreach (var t in row.DataCells)
+                    t.Index += lastIndex;
+                return row;
+            });
+        merged.Data = left.Data.Concat(dataCells).ToArray();
+        return true;
+    }
     private static ILoader GetLoader(ExcelLoaderType type) => type switch
     {
         ExcelLoaderType.ClosedXml => new ClosedXmlLoader(),
