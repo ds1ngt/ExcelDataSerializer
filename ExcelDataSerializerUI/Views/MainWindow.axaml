@@ -50,6 +50,16 @@
         <Border BorderBrush="Black"
                 BorderThickness="2"
                 CornerRadius="3"
+                Margin="10" Padding="10">
+            <StackPanel>
+                <TextBlock>XLSX Library</TextBlock>
+                <RadioButton GroupName="xlsx-library-select" Content="XlsxHelper" Click="OnSelectXlsxHelper" IsChecked="True"/>
+                <RadioButton GroupName="xlsx-library-select" Content="ClosedXML" Click="OnSelectClosedXml"/>
+            </StackPanel>
+        </Border>
+        <Border BorderBrush="Black"
+                BorderThickness="2"
+                CornerRadius="3"
                 Margin="10" Padding="10"
                 VerticalAlignment="Stretch">
             <ScrollViewer AllowAutoHide="True"

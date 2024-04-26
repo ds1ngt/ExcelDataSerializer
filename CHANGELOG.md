@@ -1,5 +1,14 @@
 # Changelog
 
+## [UI 1.0.2] - 2024-04-26
+### Added
+- Excel 파서 선택 추가
+
+## [0.1.5] - 2024-04-26
+### Added
+- Excel 파서 선택 추가
+- XlsxHelper 파서 추가 (ClosedXml은 제거 예정)
+
 ## [0.1.4] - 2024-04-25
 ### Added
 - Enum 토큰 처리 추가
