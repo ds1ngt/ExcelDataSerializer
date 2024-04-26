@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
-using Cysharp.Threading.Tasks;
+using ExcelDataSerializer;
 using ExcelDataSerializer.Model;
 using ExcelDataSerializer.Util;
 using ExcelDataSerializerUI.ViewModels;
@@ -13,6 +13,7 @@ namespace ExcelDataSerializerUI.Views;
 
 public partial class MainWindow : Window
 {
+    private Runner.ExcelLoaderType _loaderType = Runner.ExcelLoaderType.XlsxHelper;
     public MainWindow()
     {
         InitializeComponent();
@@ -86,7 +87,8 @@ public partial class MainWindow : Window
         var runnerInfo = new RunnerInfo();
         runnerInfo.AddExcelFiles(excelFiles);
         runnerInfo.SetOutputDirectory(csOutput, dataOutput);
-        
+        runnerInfo.ExcelLoaderType = _loaderType;
+
         await ExcelDataSerializer.Runner.ExecuteAsync(runnerInfo);
     }
 
@@ -114,4 +116,8 @@ public partial class MainWindow : Window
 
         return true;
     }
+
+    private void OnSelectXlsxHelper(object? sender, RoutedEventArgs e) => _loaderType = Runner.ExcelLoaderType.XlsxHelper;
+
+    private void OnSelectClosedXml(object? sender, RoutedEventArgs e) => _loaderType = Runner.ExcelLoaderType.ClosedXml;
 }
