@@ -8,6 +8,11 @@ namespace ExcelDataSerializer;
 
 public abstract class Runner
 {
+    public enum ExcelLoaderType
+    {
+        XlsxHelper,
+        ClosedXml
+    }
     public static void Execute(RunnerInfo info) => ExecuteAsync(info).Forget();
     public static async UniTask ExecuteAsync(RunnerInfo info)
     {
@@ -39,9 +44,10 @@ public abstract class Runner
     private static async UniTask<Dictionary<string, TableInfo.DataTable>> ExcelConvertAsync(RunnerInfo info)
     {
         var result = new Dictionary<string, TableInfo.DataTable>();
+        var loader = GetLoader(info.ExcelLoaderType);
         foreach (var filePath in info.XlsxFiles)
         {
-            var dataTables = await Loader.LoadXlsAsync(filePath);
+            var dataTables = await Loader.LoadXlsAsync(filePath, loader);
             foreach (var table in dataTables)
             {
                 if (!result.TryAdd(table.Name, table))
@@ -51,6 +57,12 @@ public abstract class Runner
 
         return result;
     }
+
+    private static ILoader GetLoader(ExcelLoaderType type) => type switch
+    {
+        ExcelLoaderType.ClosedXml => new ClosedXmlLoader(),
+        _ => new XlsxHelperLoader()
+    };
 
     private static DataClassInfo[] GenerateDataClassMemoryPack(string outputDir, Dictionary<string, TableInfo.DataTable> dataTables)
     {

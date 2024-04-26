@@ -6,15 +6,14 @@ public class RunnerInfo
     private string _dataOutputDir = string.Empty;
     private readonly List<string> _xlsxFiles = new List<string>();
 
-
 #region Properties
+    public Runner.ExcelLoaderType ExcelLoaderType { get; set; } = Runner.ExcelLoaderType.XlsxHelper;
     internal string CSharpOutputDir => _csOutputDir;
     internal string DataOutputDir => _dataOutputDir;
     internal IReadOnlyList<string> XlsxFiles => _xlsxFiles;
 #endregion // Properties
 
 #region Public Methods
-
     public void SetOutputDirectory(string csOutputDir, string dataOutputDir)
     {
         _csOutputDir = csOutputDir;
