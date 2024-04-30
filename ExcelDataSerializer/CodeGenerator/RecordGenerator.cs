@@ -233,8 +233,9 @@ public abstract class RecordGenerator
             Console.WriteLine($"Invalid Type = {valueType}");
             return string.Empty;
         }
-
-        return Util.Util.TrimUnderscore(GetPrimitiveValueString(type, data.Value));
+        // String 타입 파싱할 때 밑줄이 제거되어 주석처리. 문제시 복구
+        // return Util.Util.TrimUnderscore(GetPrimitiveValueString(type, data.Value));
+        return GetPrimitiveValueString(type, data.Value);
     }
     private static bool IsContainer(string value) => value.Length > 2 && value.StartsWith('[') && value.EndsWith(']');
 
