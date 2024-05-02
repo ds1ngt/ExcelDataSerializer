@@ -9,6 +9,7 @@ public abstract class TableInfo
         List,
         Dictionary,
         Enum,
+        Interface
     }
     public record DataTable
     {

@@ -8,17 +8,35 @@ namespace ExcelDataSerializer.CodeGenerator;
 
 public abstract class RecordGenerator
 {
-    private static readonly string _dataNamespace = "com.haegin.Billionaire.Data";
-    private static readonly string _dataSuffix = "Data";
-    private static readonly string _dataTableSuffix = "DataTable";
+    private const string DATA_NAMESPACE = "com.haegin.Billionaire.Data";
+    private const string DATA_SUFFIX = "Data";
+    private const string DATA_TABLE_SUFFIX = "DataTable";
+    private const string INTERFACE_NAME = "ITableData";
 
     private static TableInfo.DataTable _enumTable;
     public static void SetEnumTable(TableInfo.DataTable enumTable) => _enumTable = enumTable ?? new TableInfo.DataTable();
 
 #region Data Class
+
+    public static DataClassInfo? GenerateInterface()
+    {
+        using var builder = CodeBuilder.NewBuilder(DATA_NAMESPACE);
+        var iTableData = new CodeTypeDeclaration(INTERFACE_NAME)
+        {
+            IsInterface = true
+        };
+        builder.AddMember(iTableData);
+
+        return new DataClassInfo
+        {
+            Name = INTERFACE_NAME,
+            TableType = TableInfo.TableType.Interface,
+            Code = builder.GenerateCode(),
+        };
+    }
     public static DataClassInfo? GenerateDataClass(TableInfo.DataTable dataTable)
     {
-        using var builder = CodeBuilder.NewBuilder(_dataNamespace);
+        using var builder = CodeBuilder.NewBuilder(DATA_NAMESPACE);
         switch (dataTable.TableType)
         {
             case TableInfo.TableType.List:
@@ -42,13 +60,13 @@ public abstract class RecordGenerator
             Code = builder.GenerateCode()
         };
     }
-
     private static void AddDataClass(CodeBuilder builder, TableInfo.DataTable dataTable)
     {
         // Data Class
-        var cls = new CodeTypeDeclaration($"{dataTable.Name}{_dataSuffix}");
+        var cls = new CodeTypeDeclaration($"{dataTable.Name}{DATA_SUFFIX}");
         cls.CustomAttributes.Add(new CodeAttributeDeclaration("Serializable"));
-                
+        cls.BaseTypes.Add(INTERFACE_NAME);
+
         foreach (var cell in dataTable.Header!.SchemaCells)
         {
             var member = new CodeMemberField
@@ -67,7 +85,7 @@ public abstract class RecordGenerator
         if(dataTable.TableType == TableInfo.TableType.Dictionary && !dataTable.Header!.HasPrimaryKey)
             return;
 
-        var tableCls = new CodeTypeDeclaration($"{dataTable.Name}{_dataTableSuffix}");
+        var tableCls = new CodeTypeDeclaration($"{dataTable.Name}{DATA_TABLE_SUFFIX}");
         tableCls.CustomAttributes.Add(new CodeAttributeDeclaration("Serializable"));
 
         var keyType = string.Empty;
@@ -85,7 +103,7 @@ public abstract class RecordGenerator
             Name = Constant.DataTableMemberName,
             Type = new CodeTypeReference
             {
-                BaseType = $"Dictionary<{keyType}, {dataTable.Name}{_dataSuffix}>",
+                BaseType = $"Dictionary<{keyType}, {dataTable.Name}{DATA_SUFFIX}>",
             }
         };
         tableCls.Members.Add(member);

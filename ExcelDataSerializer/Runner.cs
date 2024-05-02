@@ -131,6 +131,10 @@ public abstract class Runner
         var enumTable = dataTables.Values.FirstOrDefault(t => t.TableType == TableInfo.TableType.Enum);
         RecordGenerator.SetEnumTable(enumTable);
 
+        var interfaceInfo = RecordGenerator.GenerateInterface();
+        if(interfaceInfo != null)
+            Util.Util.SaveToFile(Path.Combine(csOutputDir, $"{interfaceInfo.Value.Name}.cs"), interfaceInfo.Value.Code);
+        
         foreach (var (key, value) in dataTables)
         {
             var saveFilePath = Path.Combine(csOutputDir, $"{key}DataTable.cs");
