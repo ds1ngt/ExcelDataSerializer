@@ -65,6 +65,7 @@ public abstract class RecordGenerator
         // Data Class
         var cls = new CodeTypeDeclaration($"{dataTable.Name}{DATA_SUFFIX}");
         cls.CustomAttributes.Add(new CodeAttributeDeclaration("Serializable"));
+        cls.IsPartial = true;
 
         foreach (var cell in dataTable.Header!.SchemaCells)
         {
