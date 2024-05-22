@@ -23,7 +23,7 @@ public class XlsxHelperLoader : ILoader
     
     private static async Task<TableInfo.DataTable?> CreateDataTableAsync(Worksheet sheet)
     {
-        var sheetName = sheet.Name.Replace("_", string.Empty);
+        var sheetName = Util.Util.TrimInvalidChar(sheet.Name);
         if (!Util.Util.IsValidName(sheetName))
             return null;
 
