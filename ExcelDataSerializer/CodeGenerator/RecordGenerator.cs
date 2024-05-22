@@ -65,7 +65,6 @@ public abstract class RecordGenerator
         // Data Class
         var cls = new CodeTypeDeclaration($"{dataTable.Name}{DATA_SUFFIX}");
         cls.CustomAttributes.Add(new CodeAttributeDeclaration("Serializable"));
-        cls.BaseTypes.Add(INTERFACE_NAME);
 
         foreach (var cell in dataTable.Header!.SchemaCells)
         {
@@ -87,7 +86,8 @@ public abstract class RecordGenerator
 
         var tableCls = new CodeTypeDeclaration($"{dataTable.Name}{DATA_TABLE_SUFFIX}");
         tableCls.CustomAttributes.Add(new CodeAttributeDeclaration("Serializable"));
-
+        tableCls.BaseTypes.Add(INTERFACE_NAME);
+        
         var keyType = string.Empty;
         if (dataTable.Header!.HasPrimaryKey)
         {
