@@ -88,7 +88,8 @@ public abstract class RecordGenerator
         var tableCls = new CodeTypeDeclaration($"{dataTable.Name}{DATA_TABLE_SUFFIX}");
         tableCls.CustomAttributes.Add(new CodeAttributeDeclaration("Serializable"));
         tableCls.BaseTypes.Add(INTERFACE_NAME);
-        
+        tableCls.IsPartial = true;
+
         var keyType = string.Empty;
         if (dataTable.Header!.HasPrimaryKey)
         {
