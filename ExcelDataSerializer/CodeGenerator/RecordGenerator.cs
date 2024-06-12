@@ -63,7 +63,8 @@ public abstract class RecordGenerator
     private static void AddDataClass(CodeBuilder builder, TableInfo.DataTable dataTable)
     {
         // Data Class
-        var cls = new CodeTypeDeclaration($"{dataTable.Name}{DATA_SUFFIX}");
+        var name = NamingRule.Check(dataTable.Name);
+        var cls = new CodeTypeDeclaration($"{name}{DATA_SUFFIX}");
         cls.CustomAttributes.Add(new CodeAttributeDeclaration("Serializable"));
         cls.IsPartial = true;
 
@@ -85,7 +86,8 @@ public abstract class RecordGenerator
         if(dataTable.TableType == TableInfo.TableType.Dictionary && !dataTable.Header!.HasPrimaryKey)
             return;
 
-        var tableCls = new CodeTypeDeclaration($"{dataTable.Name}{DATA_TABLE_SUFFIX}");
+        var name = NamingRule.Check(dataTable.Name);
+        var tableCls = new CodeTypeDeclaration($"{name}{DATA_TABLE_SUFFIX}");
         tableCls.CustomAttributes.Add(new CodeAttributeDeclaration("Serializable"));
         tableCls.BaseTypes.Add(INTERFACE_NAME);
         tableCls.IsPartial = true;
@@ -105,7 +107,7 @@ public abstract class RecordGenerator
             Name = Constant.DataTableMemberName,
             Type = new CodeTypeReference
             {
-                BaseType = $"Dictionary<{keyType}, {dataTable.Name}{DATA_SUFFIX}>",
+                BaseType = $"Dictionary<{keyType}, {name}{DATA_SUFFIX}>",
             }
         };
         tableCls.Members.Add(member);
