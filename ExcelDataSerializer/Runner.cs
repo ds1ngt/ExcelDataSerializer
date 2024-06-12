@@ -137,7 +137,8 @@ public abstract class Runner
         
         foreach (var (key, value) in dataTables)
         {
-            var saveFilePath = Path.Combine(csOutputDir, $"{key}DataTable.cs");
+            var name = NamingRule.Check(key);
+            var saveFilePath = Path.Combine(csOutputDir, $"{name}DataTable.cs");
             var saveDataFilePath = Path.Combine(dataOutputDir, $"{key}DataTable.json");
             var classInfo = RecordGenerator.GenerateDataClass(value);
             if (classInfo == null)

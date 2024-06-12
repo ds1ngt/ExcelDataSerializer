@@ -80,7 +80,7 @@ public partial class MainWindow : Window
         Logger.Instance.OnLog -= OnLog;
         Logger.Instance.OnLog += OnLog;
 
-        var excelFiles = Directory.GetFiles(vm.ExcelPath, "*.xlsx", SearchOption.AllDirectories);
+        var excelFiles = Directory.GetFiles(vm.ExcelPath, "*.xls*", SearchOption.AllDirectories);
         var csOutput = vm.CsOutputPath;
         var dataOutput = vm.DataOutputPath;
 

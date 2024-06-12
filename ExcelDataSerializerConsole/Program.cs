@@ -52,6 +52,6 @@ internal abstract class Program
         if (!Directory.Exists(dir))
             return Array.Empty<string>();
 
-        return Directory.GetFiles(dir, "*.xlsx");
+        return Directory.GetFiles(dir, "*.xls*");
     }
 }
