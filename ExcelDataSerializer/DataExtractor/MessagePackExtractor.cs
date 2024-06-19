@@ -1,55 +1,43 @@
-﻿using System.Reflection;
-using Cysharp.Threading.Tasks;
+﻿using Cysharp.Threading.Tasks;
 using ExcelDataSerializer.Model;
 using ExcelDataSerializer.Util;
+using Newtonsoft.Json;
 
 namespace ExcelDataSerializer.DataExtractor;
 
-public abstract class MessagePackExtractor
+public abstract partial class MessagePackExtractor
 {
+#region Fields
     private const string PROJECT_DIR = "Mpc";
-    private const string CSPROJ_FILE = "Mpc.csproj";
-    private const string OUTPUT_FILE = "MessagePackGenerated.cs";
     private const string BUILD_DIR = "Build";
-
-    private static readonly string _assemblyFile = Path.Combine(Directory.GetCurrentDirectory(), PROJECT_DIR, BUILD_DIR, $"{PROJECT_DIR}.dll");
-    private static readonly string _mpcProj = @"<Project Sdk=""Microsoft.NET.Sdk"">
-
-  <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include=""MessagePack"" Version=""3.0.54-alpha"" />
-  </ItemGroup>
-
-</Project>
-";
+    private const string DATA_DIR = "Data";
+    private const string MESSAGEPACK_GENERATED_FILE = "MessagePackGenerated.cs";
+    private static readonly string _mpcGeneratedFilePath = Path.Combine(PROJECT_DIR, MESSAGEPACK_GENERATED_FILE);
+#endregion // Fields
 
 #region Public Methods
-    public static async UniTask RunAsync(DataClassInfo[] classInfos)
+    public static async UniTask RunAsync(DataClassInfo[] classInfos, Dictionary<string, TableInfo.DataTable> dataTables, RunnerInfo info)
     {
-        var assembly = await CompileAsync(classInfos);
-        await DataExtractAsync(assembly);
+        await CompileAsync(classInfos);
+        await ExportDataAsync(dataTables);
+        await BuildCsProj(PROJECT_DIR, BUILD_DIR);
+        await ExtractMessagePackDataAsync(PROJECT_DIR);
+        await CopyOutputFilesAsync(PROJECT_DIR, info);
+        
+        Logger.Instance.LogLine($"Done.");
     }
 #endregion // Public Methods
 
 #region Compile
-    private static async UniTask<Assembly> CompileAsync(DataClassInfo[] classInfos)
+    private static async UniTask CompileAsync(DataClassInfo[] classInfos)
     {
         var mpcInstalled = await IsMpcInstalledAsync();
         if (!mpcInstalled)
             await InstallMpcAsync();
 
-        await CreateProjectAsync(PROJECT_DIR, CSPROJ_FILE);
+        await CreateProjectAsync(PROJECT_DIR);
         await CopyCsFilesAsync(PROJECT_DIR, classInfos);
         await RunMpcAsync(PROJECT_DIR);
-        await BuildCsProj(PROJECT_DIR, BUILD_DIR);
-
-        var asm = Assembly.LoadFile(_assemblyFile);
-        return asm;
     }
     private static async UniTask<bool> IsMpcInstalledAsync()
     {
@@ -82,20 +70,23 @@ public abstract class MessagePackExtractor
         await ProcessUtil.RunAsync(request);
     }
 
-    private static async UniTask CreateProjectAsync(string projectDir, string projectFile)
+    private static async UniTask CreateProjectAsync(string projectDir)
     {
         if (Directory.Exists(projectDir))
             Directory.Delete(projectDir, true);
         Directory.CreateDirectory(projectDir);
 
-        await File.WriteAllTextAsync(Path.Combine(projectDir, projectFile),_mpcProj);
+        foreach (var (fileName, code) in _fileMap)
+        {
+            await File.WriteAllTextAsync(Path.Combine(projectDir, fileName), code); 
+        }
     }
 
     private static async UniTask CopyCsFilesAsync(string projectDir, DataClassInfo[] classInfos)
     {
         foreach (var info in classInfos.DistinctBy(info => info.CsFileName))
         {
-            Console.WriteLine($"CopyCsFiles = {info.CsFileName} [{info.Name}]");
+            Logger.Instance.LogLine($"CopyCsFiles = {info.CsFileName} [{info.Name}]");
             var filePath = Path.Combine(projectDir, $"{info.CsFileName}.cs");
             await File.WriteAllTextAsync(filePath, info.Code);
         }
@@ -106,28 +97,21 @@ public abstract class MessagePackExtractor
         var request = new ProcessUtil.RequestInfo
         {
             Exec = "mpc",
-            Argument = $"-i {projectDir} -o {Path.Combine(projectDir, OUTPUT_FILE)}",
-            OutputDataReceived = OnOutput,
+            Argument = $"-i {projectDir} -o {_mpcGeneratedFilePath}",
         };
 
         request.Print();
         await ProcessUtil.RunAsync(request);
-        
-        return;
-        
-        void OnOutput(string msg)
-        {
-            // Console.WriteLine($"[Run MPC]: {msg}");
-        }
     }
 
     private static async UniTask BuildCsProj(string projectDir, string buildDir)
     {
+        var workingDir = Path.Combine(Directory.GetCurrentDirectory(), projectDir);
         var request = new ProcessUtil.RequestInfo
         {
             Exec = "dotnet",
             Argument = $"build -o {buildDir}",
-            WorkingDirectory = Path.Combine(Directory.GetCurrentDirectory(), projectDir),
+            WorkingDirectory = workingDir,
         };
         
         request.Print();
@@ -135,10 +119,67 @@ public abstract class MessagePackExtractor
     }
 #endregion // Compile
 
-#region Data Extract
-    private static async UniTask DataExtractAsync(Assembly assembly)
+#region Export Data
+    private static async UniTask ExportDataAsync(Dictionary<string, TableInfo.DataTable> dataTables)
     {
-        
+        var serialized = JsonConvert.SerializeObject(dataTables.Values.ToArray());
+        var filePath = Path.Combine(PROJECT_DIR, "Data.json");
+        if (File.Exists(filePath))
+            File.Delete(filePath);
+        Logger.Instance.LogLine($"Export Data => {filePath}");
+        await File.WriteAllTextAsync(filePath, serialized);
     }
-#endregion // Data Extract
+#endregion // Export Data
+
+#region Extract MessagePack Data
+    private static async UniTask ExtractMessagePackDataAsync(string projectDir)
+    {
+        var workingDir = Path.Combine(Directory.GetCurrentDirectory(), projectDir);
+        var request = new ProcessUtil.RequestInfo
+        {
+            Exec = "dotnet",
+            Argument = "run",
+            WorkingDirectory = workingDir,
+            OutputDataReceived = msg => Logger.Instance.LogLine($"[Extract] {msg}"),
+        };
+        
+        request.Print();
+        await ProcessUtil.RunAsync(request);
+    }
+#endregion // Extract MessagePack Data
+
+#region Copy Output Files
+    private static async UniTask CopyOutputFilesAsync(string projectDir, RunnerInfo info)
+    {
+        if (!Directory.Exists(info.DataOutputDir))
+            Directory.CreateDirectory(info.DataOutputDir);
+
+        var dataPath = Path.Combine(projectDir, DATA_DIR);
+        if (!Directory.Exists(dataPath))
+            return;
+        
+        CopyGeneratedCode(info);
+        CopyDataFiles(dataPath, info.DataOutputDir);
+    }
+
+    private static void CopyGeneratedCode(RunnerInfo info)
+    {
+        var from = _mpcGeneratedFilePath;
+        var to = Path.Combine(info.CSharpOutputDir, MESSAGEPACK_GENERATED_FILE);
+
+        if (!File.Exists(from))
+            return;
+
+        File.Copy(from, to, true);
+    }
+    private static void CopyDataFiles(string dataPath, string dataOutputDir)
+    {
+        var dataFiles = Directory.GetFiles(dataPath);
+        foreach (var dataFile in dataFiles)
+        {
+            var fileName = Path.GetFileName(dataFile);
+            File.Copy(dataFile, Path.Combine(dataOutputDir, fileName), true);
+        }
+    }
+#endregion // Copy Output Files
 }

@@ -1,5 +1,4 @@
 ﻿using Cysharp.Threading.Tasks;
-using DocumentFormat.OpenXml.Drawing.Charts;
 using ExcelDataSerializer.CodeGenerator;
 using ExcelDataSerializer.DataExtractor;
 using ExcelDataSerializer.ExcelLoader;
@@ -38,8 +37,9 @@ public abstract class Runner
         // GenerateDataClassRecord(info.CSharpOutputDir, info.DataOutputDir, dataTables);
 
         // 어셈블리 생성 및 테이블 클래스 인스턴스 생성
-        await MessagePackExtractor.RunAsync(classInfos);
-
+        await MessagePackExtractor.RunAsync(classInfos, dataTables, info);
+        
+        // MessagePackExtractor.Dispose();
         // var assemblyInfoMap = AssemblyHelper.CompileDataClassInfos(classInfos);
         // AssemblyHelper.PrintAssemblyInfos(assemblyInfoMap);
 
@@ -127,7 +127,8 @@ public abstract class Runner
         {
             var key = kvp.Key;
             var value = kvp.Value;
-            var saveFilePath = Path.Combine(outputDir, $"{key}DataTable.cs");
+            var name = NamingRule.Check(key);
+            var saveFilePath = Path.Combine(outputDir, $"{name}DataTable.cs");
             var classInfo = MessagePackGenerator.GenerateDataClass(value);
             if (!classInfo.HasValue)
                 continue;

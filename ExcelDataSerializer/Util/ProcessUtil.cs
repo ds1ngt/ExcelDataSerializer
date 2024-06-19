@@ -6,9 +6,11 @@ namespace ExcelDataSerializer.Util;
 
 public static class ProcessUtil
 {
+#region Process
     public static async UniTask RunAsync(RequestInfo requestInfo)
     {
         var request = new Request(requestInfo);
+       
         try
         {
             var info = new ProcessStartInfo
@@ -17,14 +19,9 @@ public static class ProcessUtil
                 Arguments = requestInfo.Argument,
                 UseShellExecute = false,
                 CreateNoWindow = true,
-
-                RedirectStandardInput = true,
-                RedirectStandardError = true,
-                RedirectStandardOutput = true,
-                StandardInputEncoding = Encoding.UTF8,
-                StandardErrorEncoding = Encoding.UTF8,
-                StandardOutputEncoding = Encoding.UTF8,
             };
+
+            info = SetRedirect(requestInfo, info);
 
             if (!string.IsNullOrWhiteSpace(requestInfo.WorkingDirectory))
                 info.WorkingDirectory = requestInfo.WorkingDirectory;
@@ -35,13 +32,9 @@ public static class ProcessUtil
 
             while (!process.HasExited)
             {
+                await ProcessRedirectAsync(process, info, requestInfo);
                 await UniTask.Yield();
             }
-
-            var error = await process.StandardError.ReadToEndAsync();
-            var output = await process.StandardOutput.ReadToEndAsync();
-            request.RequestInfo.ErrorDataReceived?.Invoke(error);
-            request.RequestInfo.OutputDataReceived?.Invoke(output);
 
             await process.WaitForExitAsync();
         }
@@ -54,7 +47,45 @@ public static class ProcessUtil
             request.RequestInfo.Exited?.Invoke();
         }
     }
+#endregion // Process
 
+#region Redirect
+    private static ProcessStartInfo SetRedirect(RequestInfo requestInfo, ProcessStartInfo info)
+    {
+        var redirectError = requestInfo.ErrorDataReceived != null;
+        var redirectOutput = requestInfo.OutputDataReceived != null;
+        if (redirectError)
+        {
+            info.RedirectStandardError = true;
+            info.StandardErrorEncoding = Encoding.UTF8;
+        }
+
+        if (redirectOutput)
+        {
+            info.RedirectStandardOutput = true;
+            info.StandardOutputEncoding = Encoding.UTF8;
+        }
+
+        return info;
+    }
+
+    private static async UniTask ProcessRedirectAsync(Process process, ProcessStartInfo info, RequestInfo requestInfo)
+    {
+        if (info.RedirectStandardError)
+        {
+            var error = await process.StandardError.ReadToEndAsync();
+            requestInfo.ErrorDataReceived?.Invoke(error);
+        }
+
+        if (info.RedirectStandardOutput)
+        {
+            var output = await process.StandardOutput.ReadToEndAsync();
+            requestInfo.OutputDataReceived?.Invoke(output);
+        }
+    }
+#endregion // Redirect
+
+#region Request
     private class Request
     {
         public int Id;
@@ -81,4 +112,5 @@ public static class ProcessUtil
             Console.WriteLine($"[Request] Exec: {Exec}, Argument: {Argument}");
         }
     }
+#endregion // Request
 }

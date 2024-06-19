@@ -19,6 +19,7 @@ public abstract class TableInfo
         private Dictionary<string, (string, int)[]> _enumDataColumnMap;
 
         public string Name;
+        public string ClassName;
         public Header? Header = null;
 
         public DataRow[] Data

@@ -46,6 +46,7 @@ public class XlsxHelperLoader : ILoader
         var result = new TableInfo.DataTable
         {
             Name = sheetName,
+            ClassName = NamingRule.Check(sheetName),
             Header = header,
             Data = await CreateDataRowsAsync(header, rows, validColumnIndices, validColumnNames),
             TableType = LoaderUtil.GetTableType(header),

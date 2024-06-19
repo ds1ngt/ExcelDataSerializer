@@ -3,6 +3,7 @@
         xmlns:vm="using:ExcelDataSerializerUI.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:li="using:LoadingIndicators.Avalonia"
         mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="450"
         x:Class="ExcelDataSerializerUI.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
@@ -41,21 +42,12 @@
                 BorderThickness="2"
                 CornerRadius="3"
                 Margin="10" Padding="10">
-            <DockPanel>
+            <DockPanel HorizontalAlignment="Left">
                 <!-- <Button Click="OnOpenExcelFolder">Excel 폴더 선택</Button> -->
                 <!-- <Button Click="OnOpenSaveFolder">저장 폴더 선택</Button> -->
                 <Button Click="OnExecute">실행</Button>
+                <li:LoadingIndicator IsActive="{Binding IsBusy}" Mode="Arc" Height="10" SpeedRatio="1.2" />
             </DockPanel>
-        </Border>
-        <Border BorderBrush="Black"
-                BorderThickness="2"
-                CornerRadius="3"
-                Margin="10" Padding="10">
-            <StackPanel>
-                <TextBlock>XLSX Library</TextBlock>
-                <RadioButton GroupName="xlsx-library-select" Content="XlsxHelper" Click="OnSelectXlsxHelper" IsChecked="True"/>
-                <RadioButton GroupName="xlsx-library-select" Content="ClosedXML" Click="OnSelectClosedXml"/>
-            </StackPanel>
         </Border>
         <Border BorderBrush="Black"
                 BorderThickness="2"
