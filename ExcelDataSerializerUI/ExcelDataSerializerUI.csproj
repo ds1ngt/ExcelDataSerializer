@@ -27,8 +27,5 @@
 
     <ItemGroup>
       <ProjectReference Include="..\ExcelDataSerializer\ExcelDataSerializer.csproj" />
-      <None Update="External/netstandard.dll">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
     </ItemGroup>
 </Project>
