@@ -27,11 +27,14 @@ public abstract class Runner
         Logger.Instance.LogLine($"> 데이터 저장 경로: {info.DataOutputDir}");
         Logger.Instance.LogLine($"> 총 {info.XlsxFiles.Count} 워크시트");
 
+        Util.Util.DeleteAndRecreateDirectory(info.DataOutputDir);
+        Util.Util.DeleteAndRecreateDirectory(info.CSharpOutputDir);
+
         // 엑셀 변환 준비 (Excel -> DataTable)
         var dataTables = await ExcelConvertAsync(info);
         
         // 데이터 클래스 생성 (DataTable -> C#)
-        var classInfos = GenerateDataClassMessagePack(info.CSharpOutputDir, dataTables);
+        var classInfos = await GenerateDataClassMessagePackAsync(info.CSharpOutputDir, dataTables);
         
         // var classInfos = GenerateDataClassMemoryPack(info.OutputDir, dataTables);
         // GenerateDataClassRecord(info.CSharpOutputDir, info.DataOutputDir, dataTables);
@@ -118,7 +121,7 @@ public abstract class Runner
         _ => new XlsxHelperLoader()
     };
 
-    private static DataClassInfo[] GenerateDataClassMessagePack(string outputDir, Dictionary<string, TableInfo.DataTable> dataTables)
+    private static async UniTask<DataClassInfo[]> GenerateDataClassMessagePackAsync(string outputDir, Dictionary<string, TableInfo.DataTable> dataTables)
     {
         var result = new List<DataClassInfo>();
         result.Add(RecordGenerator.GenerateInterface()!.Value);
@@ -134,7 +137,7 @@ public abstract class Runner
                 continue;
 
             result.Add(classInfo.Value);
-            Util.Util.SaveToFile(saveFilePath, classInfo.Value.Code);
+            await Util.Util.SaveToFileAsync(saveFilePath, classInfo.Value.Code);
         }
 
         return result.ToArray();
@@ -150,7 +153,7 @@ public abstract class Runner
             var saveFilePath = Path.Combine(outputDir, $"{key}Table.cs");
             var classInfo = MemoryPackGenerator.GenerateDataClass(value);
             result.Add(classInfo);
-            Util.Util.SaveToFile(saveFilePath, classInfo.Code);
+            Util.Util.SaveToFileAsync(saveFilePath, classInfo.Code).Forget();
         }
 
         return result.ToArray();
@@ -164,7 +167,7 @@ public abstract class Runner
 
         var interfaceInfo = RecordGenerator.GenerateInterface();
         if(interfaceInfo != null)
-            Util.Util.SaveToFile(Path.Combine(csOutputDir, $"{interfaceInfo.Value.Name}.cs"), interfaceInfo.Value.Code);
+            Util.Util.SaveToFileAsync(Path.Combine(csOutputDir, $"{interfaceInfo.Value.Name}.cs"), interfaceInfo.Value.Code).Forget();
         
         foreach (var kvp in dataTables)
         {
@@ -178,12 +181,12 @@ public abstract class Runner
                 continue;
             
             result.Add(classInfo.Value);
-            Util.Util.SaveToFile(saveFilePath, classInfo.Value.Code);
+            Util.Util.SaveToFileAsync(saveFilePath, classInfo.Value.Code).Forget();
 
             if (value.TableType == TableInfo.TableType.Enum) continue;
 
             var data = RecordGenerator.GenerateRecordData(value);
-            Util.Util.SaveToFile(saveDataFilePath, data);
+            Util.Util.SaveToFileAsync(saveDataFilePath, data).Forget();
             Logger.Instance.LogLine();
         }
 

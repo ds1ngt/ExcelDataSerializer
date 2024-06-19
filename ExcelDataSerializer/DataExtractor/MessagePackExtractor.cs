@@ -13,6 +13,15 @@ public abstract partial class MessagePackExtractor
     private const string DATA_DIR = "Data";
     private const string MESSAGEPACK_GENERATED_FILE = "MessagePackGenerated.cs";
     private static readonly string _mpcGeneratedFilePath = Path.Combine(PROJECT_DIR, MESSAGEPACK_GENERATED_FILE);
+
+    /// <summary>
+    /// (From FilePath, To FileName)
+    /// </summary>
+    private static readonly (string, string)[] _copyGeneratedCode = new (string, string)[]
+    {
+        (_mpcGeneratedFilePath, MESSAGEPACK_GENERATED_FILE),
+        (Path.Combine(PROJECT_DIR, $"{Constant.INTERFACE_NAME}.cs"), $"{Constant.INTERFACE_NAME}.cs"),
+    };
 #endregion // Fields
 
 #region Public Methods
@@ -22,7 +31,7 @@ public abstract partial class MessagePackExtractor
         await ExportDataAsync(dataTables);
         await BuildCsProj(PROJECT_DIR, BUILD_DIR);
         await ExtractMessagePackDataAsync(PROJECT_DIR);
-        await CopyOutputFilesAsync(PROJECT_DIR, info);
+        CopyOutputFiles(PROJECT_DIR, info);
         
         Logger.Instance.LogLine($"Done.");
     }
@@ -34,7 +43,7 @@ public abstract partial class MessagePackExtractor
         var mpcInstalled = await IsMpcInstalledAsync();
         if (!mpcInstalled)
             await InstallMpcAsync();
-
+        
         await CreateProjectAsync(PROJECT_DIR);
         await CopyCsFilesAsync(PROJECT_DIR, classInfos);
         await RunMpcAsync(PROJECT_DIR);
@@ -72,9 +81,7 @@ public abstract partial class MessagePackExtractor
 
     private static async UniTask CreateProjectAsync(string projectDir)
     {
-        if (Directory.Exists(projectDir))
-            Directory.Delete(projectDir, true);
-        Directory.CreateDirectory(projectDir);
+        Util.Util.DeleteAndRecreateDirectory(projectDir);
 
         foreach (var (fileName, code) in _fileMap)
         {
@@ -97,7 +104,7 @@ public abstract partial class MessagePackExtractor
         var request = new ProcessUtil.RequestInfo
         {
             Exec = "mpc",
-            Argument = $"-i {projectDir} -o {_mpcGeneratedFilePath}",
+            Argument = $"-i {projectDir} -o {_mpcGeneratedFilePath} -n com.haegin.Billionaire.Data -r BillionaireClient",
         };
 
         request.Print();
@@ -149,11 +156,8 @@ public abstract partial class MessagePackExtractor
 #endregion // Extract MessagePack Data
 
 #region Copy Output Files
-    private static async UniTask CopyOutputFilesAsync(string projectDir, RunnerInfo info)
+    private static void CopyOutputFiles(string projectDir, RunnerInfo info)
     {
-        if (!Directory.Exists(info.DataOutputDir))
-            Directory.CreateDirectory(info.DataOutputDir);
-
         var dataPath = Path.Combine(projectDir, DATA_DIR);
         if (!Directory.Exists(dataPath))
             return;
@@ -164,13 +168,14 @@ public abstract partial class MessagePackExtractor
 
     private static void CopyGeneratedCode(RunnerInfo info)
     {
-        var from = _mpcGeneratedFilePath;
-        var to = Path.Combine(info.CSharpOutputDir, MESSAGEPACK_GENERATED_FILE);
+        foreach (var (from, toFileName) in _copyGeneratedCode)
+        {
+            var to = Path.Combine(info.CSharpOutputDir, toFileName);
+            if (!File.Exists(from))
+                continue;
 
-        if (!File.Exists(from))
-            return;
-
-        File.Copy(from, to, true);
+            File.Copy(from, to, true);
+        }
     }
     private static void CopyDataFiles(string dataPath, string dataOutputDir)
     {
