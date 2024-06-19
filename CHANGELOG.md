@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.0.0] [UI 1.0.3] - 2024-06-19
+### Added
+- MessagePack 적용
+- C# 클래스 MessagePack 형식으로 변경
+- MPC로 생성된 Binder 코드 추가
+- Json 대신 직렬화 된 데이터 파일 생성
+- 실행중일 때 인디케이터 UI 추가 및 중복실행 방지 적용
+
 ## [0.2.2] - 2024-06-12
 ### Added
 - NamingRule 추가  
