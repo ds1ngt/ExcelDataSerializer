@@ -1,9 +1,8 @@
 ﻿using System.Reflection;
-using System.Reflection.Emit;
 using System.Runtime.Loader;
 using ExcelDataSerializer.Model;
 using ExcelDataSerializer.Util;
-using MemoryPack;
+using MessagePack;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
@@ -11,12 +10,26 @@ namespace ExcelDataSerializer.DataExtractor;
 
 public abstract class AssemblyHelper
 {
+    private static readonly List<string> _refPaths = new List<string>
+    {
+        // typeof(MemoryPackableAttribute).GetTypeInfo().Assembly.Location,
+        typeof(MessagePackSerializer).GetTypeInfo().Assembly.Location,
+        typeof(MessagePackObjectAttribute).GetTypeInfo().Assembly.Location,
+        $"{Directory.GetCurrentDirectory()}\\External\\netstandard.dll",    // 
+        // typeof(KeyAttribute).GetTypeInfo().Assembly.Location,
+        // typeof(Object).GetTypeInfo().Assembly.Location,
+    };
+    private static readonly List<MetadataReference> _references = new List<MetadataReference>();
     public static Dictionary<string, CodeAssemblyInfo> CompileDataClassInfos(params DataClassInfo[] infos)
     {
+        Initialize();
+
         var result = new Dictionary<string, CodeAssemblyInfo>();
         foreach (var info in infos)
         {
             if (!TryCompileCode(info.Code, out var assembly)) continue;
+            if (info.IsInterface) continue;
+            
             var instanceMap = CreateInstanceInAssembly(assembly);
             var assemblyInfo = new CodeAssemblyInfo
             {
@@ -24,11 +37,24 @@ public abstract class AssemblyHelper
                 Assembly = assembly,
                 TypeInstanceMap = instanceMap,
             };
-            if (!result.TryAdd(assemblyInfo.Name, assemblyInfo))
+            if (result.ContainsKey(assemblyInfo.Name))
                 Logger.Instance.LogLine($"CompileDataClassInfos : Type Duplicate!!! {assemblyInfo.Name}");
+            else
+                result.Add(assemblyInfo.Name, assemblyInfo);
         }
 
         return result;
+    }
+
+    private static void Initialize()
+    {
+        _references.Clear();
+        _refPaths.ForEach(r => _references.Add(MetadataReference.CreateFromFile(r)));
+        // foreach (var asmName in Assembly.GetEntryAssembly().GetReferencedAssemblies().ToArray())
+        // {
+        //     var asm = Assembly.Load(asmName);
+        //     _references.Add(MetadataReference.CreateFromFile(asm.Location));
+        // }
     }
     private static bool TryCompileCode(string code, out Assembly assembly)
     {
@@ -36,25 +62,16 @@ public abstract class AssemblyHelper
 
         var syntaxTree = CSharpSyntaxTree.ParseText(code);
         var asmName = Path.GetRandomFileName();
-        var refPaths = new[]
-        {
-            typeof(MemoryPackableAttribute).GetTypeInfo().Assembly.Location,
-            typeof(Object).GetTypeInfo().Assembly.Location,
-            Path.Combine(Path.GetDirectoryName(typeof(System.Runtime.GCSettings).GetTypeInfo().Assembly.Location) ?? string.Empty, "System.Runtime.dll"),
-            Path.Combine(Path.GetDirectoryName(typeof(Memory<>).GetTypeInfo().Assembly.Location) ?? string.Empty, "System.Memory.dll"),
-        };
-
-        MetadataReference[] references = refPaths.Select(r => MetadataReference.CreateFromFile(r)).ToArray();
         var compilation = CSharpCompilation.Create(
             asmName,
             syntaxTrees: new[] { syntaxTree },
-            references: references,
+            references: _references,
             options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
-        
-        foreach (var type in Assembly.GetEntryAssembly().GetTypes())
-        {
-            Logger.Instance.LogLine($"TryCompileCode Entry Assembly Type = {type}");
-        }
+
+        // foreach (var type in Assembly.GetEntryAssembly().GetTypes())
+        // {
+        //     Logger.Instance.LogLine($"TryCompileCode Entry Assembly Type = {type}");
+        // }
         using var ms = new MemoryStream();
         var result = compilation.Emit(ms);
         if (!result.Success)
@@ -70,6 +87,7 @@ public abstract class AssemblyHelper
         {
             ms.Seek(0, SeekOrigin.Begin);
             assembly = AssemblyLoadContext.Default.LoadFromStream(ms);
+            _references.Add(compilation.ToMetadataReference());
             return true;
         }
 
@@ -89,8 +107,10 @@ public abstract class AssemblyHelper
             if (instance == null)
                 continue;
 
-            if (!result.TryAdd(type.Name, instance))
+            if (result.ContainsKey(type.Name))
                 Logger.Instance.LogLine($"CreateInstance : Type Duplicate!!! {type.Name}");
+            else
+                result.Add(type.Name, instance);
         }
         return result;
     }

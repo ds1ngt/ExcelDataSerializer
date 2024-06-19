@@ -13,7 +13,7 @@ public abstract class Loader
             return Array.Empty<TableInfo.DataTable>();
 
         Logger.Instance.LogLine($"Excel 로드 = {path}");
-        await using var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+        using var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
         var dataTables = new List<TableInfo.DataTable>();
         await loader.LoadWorkbookAsync(fs, dataTables);
         return dataTables;

@@ -8,11 +8,6 @@ namespace ExcelDataSerializer.CodeGenerator;
 
 public abstract class RecordGenerator
 {
-    private const string DATA_NAMESPACE = "com.haegin.Billionaire.Data";
-    private const string DATA_SUFFIX = "Data";
-    private const string DATA_TABLE_SUFFIX = "DataTable";
-    private const string INTERFACE_NAME = "ITableData";
-
     private static TableInfo.DataTable _enumTable;
     public static void SetEnumTable(TableInfo.DataTable enumTable) => _enumTable = enumTable ?? new TableInfo.DataTable();
 
@@ -20,8 +15,8 @@ public abstract class RecordGenerator
 
     public static DataClassInfo? GenerateInterface()
     {
-        using var builder = CodeBuilder.NewBuilder(DATA_NAMESPACE);
-        var iTableData = new CodeTypeDeclaration(INTERFACE_NAME)
+        using var builder = CodeBuilder.NewBuilder(Constant.DATA_NAMESPACE);
+        var iTableData = new CodeTypeDeclaration(Constant.INTERFACE_NAME)
         {
             IsInterface = true
         };
@@ -29,14 +24,16 @@ public abstract class RecordGenerator
 
         return new DataClassInfo
         {
-            Name = INTERFACE_NAME,
+            Name = Constant.INTERFACE_NAME,
             TableType = TableInfo.TableType.Interface,
+            CsFileName = Constant.INTERFACE_NAME,
             Code = builder.GenerateCode(),
+            IsInterface = true,
         };
     }
     public static DataClassInfo? GenerateDataClass(TableInfo.DataTable dataTable)
     {
-        using var builder = CodeBuilder.NewBuilder(DATA_NAMESPACE);
+        using var builder = CodeBuilder.NewBuilder(Constant.DATA_NAMESPACE);
         switch (dataTable.TableType)
         {
             case TableInfo.TableType.List:
@@ -64,7 +61,7 @@ public abstract class RecordGenerator
     {
         // Data Class
         var name = NamingRule.Check(dataTable.Name);
-        var cls = new CodeTypeDeclaration($"{name}{DATA_SUFFIX}");
+        var cls = new CodeTypeDeclaration($"{name}{Constant.DATA_SUFFIX}");
         cls.CustomAttributes.Add(new CodeAttributeDeclaration("Serializable"));
         cls.IsPartial = true;
 
@@ -87,9 +84,9 @@ public abstract class RecordGenerator
             return;
 
         var name = NamingRule.Check(dataTable.Name);
-        var tableCls = new CodeTypeDeclaration($"{name}{DATA_TABLE_SUFFIX}");
+        var tableCls = new CodeTypeDeclaration($"{name}{Constant.DATA_TABLE_SUFFIX}");
         tableCls.CustomAttributes.Add(new CodeAttributeDeclaration("Serializable"));
-        tableCls.BaseTypes.Add(INTERFACE_NAME);
+        tableCls.BaseTypes.Add(Constant.INTERFACE_NAME);
         tableCls.IsPartial = true;
 
         var keyType = string.Empty;
@@ -107,7 +104,7 @@ public abstract class RecordGenerator
             Name = Constant.DataTableMemberName,
             Type = new CodeTypeReference
             {
-                BaseType = $"Dictionary<{keyType}, {name}{DATA_SUFFIX}>",
+                BaseType = $"Dictionary<{keyType}, {name}{Constant.DATA_SUFFIX}>",
             }
         };
         tableCls.Members.Add(member);
@@ -154,8 +151,10 @@ public abstract class RecordGenerator
         var itemLen = itemMap.Keys.Count;
         sb.Append($"{{\"Datas\":");
         sb.Append("{");
-        foreach (var (itemKey, itemValue) in itemMap)
+        foreach (var kvp in itemMap)
         {
+            var itemKey = kvp.Key;
+            var itemValue = kvp.Value;
             sb.Append($"\"{itemKey}\"");
             sb.Append(":{");
             sb.Append(itemValue.Aggregate((l, r) => $"{l}, {r}"));
@@ -183,10 +182,10 @@ public abstract class RecordGenerator
             if (string.IsNullOrWhiteSpace(key))
                 continue;
 
-            if (!itemMap.TryAdd(key, cellItems.ToArray()))
-            {
+            if (itemMap.ContainsKey(key))
                 Console.WriteLine($"KEY DUPLICATE = {dataTable.Name} : {key}");
-            }
+            else
+                itemMap.Add(key, cellItems.ToArray());
         }
 
         string GetPrimaryKey(TableInfo.DataRow row)
@@ -259,7 +258,7 @@ public abstract class RecordGenerator
         // return Util.Util.TrimUnderscore(GetPrimitiveValueString(type, data.Value));
         return GetPrimitiveValueString(type, data.Value);
     }
-    private static bool IsContainer(string value) => value.Length > 2 && value.StartsWith('[') && value.EndsWith(']');
+    private static bool IsContainer(string value) => value.Length > 2 && value.StartsWith("[") && value.EndsWith("]");
 
     private static string GetPrimitiveValueString(Types type, string value)
     {

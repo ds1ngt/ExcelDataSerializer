@@ -1,6 +1,6 @@
 ﻿using Cysharp.Threading.Tasks;
-using DocumentFormat.OpenXml.Drawing.Charts;
 using ExcelDataSerializer.CodeGenerator;
+using ExcelDataSerializer.DataExtractor;
 using ExcelDataSerializer.ExcelLoader;
 using ExcelDataSerializer.Model;
 using ExcelDataSerializer.Util;
@@ -31,10 +31,15 @@ public abstract class Runner
         var dataTables = await ExcelConvertAsync(info);
         
         // 데이터 클래스 생성 (DataTable -> C#)
+        var classInfos = GenerateDataClassMessagePack(info.CSharpOutputDir, dataTables);
+        
         // var classInfos = GenerateDataClassMemoryPack(info.OutputDir, dataTables);
-        GenerateDataClassRecord(info.CSharpOutputDir, info.DataOutputDir, dataTables);
+        // GenerateDataClassRecord(info.CSharpOutputDir, info.DataOutputDir, dataTables);
 
         // 어셈블리 생성 및 테이블 클래스 인스턴스 생성
+        await MessagePackExtractor.RunAsync(classInfos, dataTables, info);
+        
+        // MessagePackExtractor.Dispose();
         // var assemblyInfoMap = AssemblyHelper.CompileDataClassInfos(classInfos);
         // AssemblyHelper.PrintAssemblyInfos(assemblyInfoMap);
 
@@ -51,7 +56,7 @@ public abstract class Runner
             var dataTables = await Loader.LoadXlsAsync(filePath, loader);
             foreach (var table in dataTables)
             {
-                if (!result.TryAdd(table.Name, table))
+                if (result.ContainsKey(table.Name))
                 {
                     if (table.Name == Constant.Enum)
                     {
@@ -62,6 +67,8 @@ public abstract class Runner
                     else
                         Logger.Instance.LogLine($"ExcelConvert : 이름 중복!!! {filePath} : {table.Name}");
                 }
+                else
+                    result.Add(table.Name, table);
             }
         }
 
@@ -86,7 +93,7 @@ public abstract class Runner
 
         var lastIndex = left.Header.SchemaCells
             .Select(cell => cell.Index)
-            .MaxBy(idx => idx) + 1;
+            .Max(idx => idx) + 1;
 
         var schemaCells = right.Header.SchemaCells.Select(cell =>
         {
@@ -111,11 +118,35 @@ public abstract class Runner
         _ => new XlsxHelperLoader()
     };
 
+    private static DataClassInfo[] GenerateDataClassMessagePack(string outputDir, Dictionary<string, TableInfo.DataTable> dataTables)
+    {
+        var result = new List<DataClassInfo>();
+        result.Add(RecordGenerator.GenerateInterface()!.Value);
+
+        foreach (var kvp in dataTables)
+        {
+            var key = kvp.Key;
+            var value = kvp.Value;
+            var name = NamingRule.Check(key);
+            var saveFilePath = Path.Combine(outputDir, $"{name}DataTable.cs");
+            var classInfo = MessagePackGenerator.GenerateDataClass(value);
+            if (!classInfo.HasValue)
+                continue;
+
+            result.Add(classInfo.Value);
+            Util.Util.SaveToFile(saveFilePath, classInfo.Value.Code);
+        }
+
+        return result.ToArray();
+    }
+
     private static DataClassInfo[] GenerateDataClassMemoryPack(string outputDir, Dictionary<string, TableInfo.DataTable> dataTables)
     {
         var result = new List<DataClassInfo>();
-        foreach (var (key, value) in dataTables)
+        foreach (var kvp in dataTables)
         {
+            var key = kvp.Key;
+            var value = kvp.Value;
             var saveFilePath = Path.Combine(outputDir, $"{key}Table.cs");
             var classInfo = MemoryPackGenerator.GenerateDataClass(value);
             result.Add(classInfo);
@@ -135,8 +166,10 @@ public abstract class Runner
         if(interfaceInfo != null)
             Util.Util.SaveToFile(Path.Combine(csOutputDir, $"{interfaceInfo.Value.Name}.cs"), interfaceInfo.Value.Code);
         
-        foreach (var (key, value) in dataTables)
+        foreach (var kvp in dataTables)
         {
+            var key = kvp.Key;
+            var value = kvp.Value;
             var name = NamingRule.Check(key);
             var saveFilePath = Path.Combine(csOutputDir, $"{name}DataTable.cs");
             var saveDataFilePath = Path.Combine(dataOutputDir, $"{key}DataTable.json");

@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
+using Cysharp.Threading.Tasks;
 using ExcelDataSerializer;
 using ExcelDataSerializer.Model;
 using ExcelDataSerializer.Util;
@@ -74,6 +75,10 @@ public partial class MainWindow : Window
 
         if (!Validate())
             return;
+        if (vm.IsBusy)
+            return;
+        vm.IsBusy = true;
+        await UniTask.Yield();
 
         vm.ClearLog();
 
@@ -89,7 +94,8 @@ public partial class MainWindow : Window
         runnerInfo.SetOutputDirectory(csOutput, dataOutput);
         runnerInfo.ExcelLoaderType = _loaderType;
 
-        await ExcelDataSerializer.Runner.ExecuteAsync(runnerInfo);
+        await Runner.ExecuteAsync(runnerInfo);
+        vm.IsBusy = false;
     }
 
     private void OnLog(string msg, bool lineBreak)

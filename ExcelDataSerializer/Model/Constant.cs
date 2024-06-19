@@ -9,4 +9,9 @@ public abstract class Constant
     public static readonly string Enum = "Enum";
     public static readonly string EnumGet = "EnumGet";
     public static readonly string DataTableMemberName = "Datas";
+    
+    public const string DATA_NAMESPACE = "com.haegin.Billionaire.Data";
+    public const string DATA_SUFFIX = "Data";
+    public const string DATA_TABLE_SUFFIX = "DataTable";
+    public const string INTERFACE_NAME = "ITableData";
 }
