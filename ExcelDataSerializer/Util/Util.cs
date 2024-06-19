@@ -1,4 +1,6 @@
-﻿namespace ExcelDataSerializer.Util;
+﻿using Cysharp.Threading.Tasks;
+
+namespace ExcelDataSerializer.Util;
 
 public abstract class Util
 {
@@ -15,7 +17,7 @@ public abstract class Util
         return TrimInvalidChar(name);
     }
 
-    public static void SaveToFile(string savePath, string text)
+    public static async UniTask SaveToFileAsync(string savePath, string text)
     {
         if (string.IsNullOrWhiteSpace(savePath))
             return;
@@ -27,10 +29,16 @@ public abstract class Util
         if (!Directory.Exists(saveDir))
             Directory.CreateDirectory(saveDir);
 
-        File.WriteAllText(savePath, text);
+        await File.WriteAllTextAsync(savePath, text);
         Logger.Instance.LogLine($"파일 저장 {savePath}");
     }
 
+    public static void DeleteAndRecreateDirectory(string dirPath)
+    {
+        if (Directory.Exists(dirPath))
+            Directory.Delete(dirPath, true);
+        Directory.CreateDirectory(dirPath);
+    }
     public static string TrimInvalidChar(string? value)
     {
         if (string.IsNullOrWhiteSpace(value))

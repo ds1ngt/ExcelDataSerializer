@@ -1,6 +1,7 @@
 ﻿using System.CodeDom;
 using System.CodeDom.Compiler;
 using System.Text;
+using Cysharp.Threading.Tasks;
 using ExcelDataSerializer.Model;
 using ExcelDataSerializer.Util;
 
@@ -163,7 +164,7 @@ public abstract class MemoryPackGenerator
     {
         var savePath = Path.Combine(Path.GetTempPath(), "ExcelDataSerializer", $"{dataTable.Name}.cs");
         Logger.Instance.LogLine($"테이블 저장 [{dataTable.Name}] {savePath}");
-        Util.Util.SaveToFile(savePath, sb.ToString());
+        Util.Util.SaveToFileAsync(savePath, sb.ToString()).Forget();
     }
 #endregion // Util
 }

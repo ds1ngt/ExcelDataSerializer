@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.0.1] - 2024-06-19
+### Fixed
+- MessagePack 추출 파일 확장자 변경 (.data &rarr; .txt)
+- 데이터 처리 관련 이슈 수정
+
 ## [1.0.0] [UI 1.0.3] - 2024-06-19
 ### Added
 - MessagePack 적용

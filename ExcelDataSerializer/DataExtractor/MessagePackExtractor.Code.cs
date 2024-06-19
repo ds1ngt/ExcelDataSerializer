@@ -345,7 +345,7 @@ public class Extractor
 
         var serialized = MessagePackSerializer.Serialize(tableInstance) as byte[];
         var base64String = Convert.ToBase64String(serialized);
-        await SaveDataTableAsync($""{table.Name}.data"", base64String);
+        await SaveDataTableAsync($""{table.Name}.txt"", base64String);
     }
     private static string GetDataTypeStr(string className) => $""{TYPE_NAMESPACE}.{className}Data"";
     private static string GetTableTypeStr(string className) => $""{TYPE_NAMESPACE}.{className}DataTable"";
