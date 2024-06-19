@@ -1,7 +1,6 @@
 ﻿using System.Reflection;
 using ExcelDataSerializer.Model;
 using ExcelDataSerializer.Util;
-using MemoryPack;
 
 namespace ExcelDataSerializer.DataExtractor;
 
@@ -347,5 +346,5 @@ public abstract class AssemblyDataInjector
         tokens = value.Trim().Split(',');
         return true;
     }
-    private static bool IsContainer(string value) => value.Length > 2 && value.StartsWith('[') && value.EndsWith(']');
+    private static bool IsContainer(string value) => value.Length > 2 && value.StartsWith("[") && value.EndsWith("]");
 }

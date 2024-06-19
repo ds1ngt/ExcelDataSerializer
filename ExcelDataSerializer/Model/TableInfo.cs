@@ -19,6 +19,7 @@ public abstract class TableInfo
         private Dictionary<string, (string, int)[]> _enumDataColumnMap;
 
         public string Name;
+        public string ClassName;
         public Header? Header = null;
 
         public DataRow[] Data
@@ -105,13 +106,15 @@ public abstract class TableInfo
                 return;
 
             var enumValueTuples = new List<(string, int)>();
-            foreach (var (key, columnItems) in _dataColumnMap)
+            foreach (var kvp in _dataColumnMap)
             {
+                var key = kvp.Key;
+                var columnItems = kvp.Value;
                 enumValueTuples.Clear();
                 var idx = 0;
                 foreach (var columnItem in columnItems)
                 {
-                    var tokens = columnItem.Value.Split("=");
+                    var tokens = columnItem.Value.Split('=');
                     if (tokens.Length == 0)
                         continue;
                     if(string.IsNullOrWhiteSpace(tokens[0]))

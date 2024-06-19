@@ -45,6 +45,7 @@ public class ClosedXmlLoader : ILoader
         var result = new TableInfo.DataTable
         {
             Name = name,
+            ClassName = NamingRule.Check(name),
             Header = header,
             Data = await CreateDataRowsAsync(header, range, validColumnIndices),
             TableType = LoaderUtil.GetTableType(header),

@@ -20,6 +20,7 @@ public class MainWindowViewModel : ViewModelBase
     private string _logStr = string.Empty;
     private string _version;
     private string _libraryVersion;
+    private bool _isBusy;
     public MainWindowViewModel()
     {
         UpdateVersionStr();
@@ -84,6 +85,12 @@ public class MainWindowViewModel : ViewModelBase
     {
         get => _logStr;
         set => this.RaiseAndSetIfChanged(ref _logStr, value);
+    }
+
+    public bool IsBusy
+    {
+        get => _isBusy;
+        set => this.RaiseAndSetIfChanged(ref _isBusy, value);
     }
 #endregion // Binding Property
 
