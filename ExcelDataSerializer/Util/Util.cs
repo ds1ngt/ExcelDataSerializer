@@ -39,6 +39,19 @@ public abstract class Util
             Directory.Delete(dirPath, true);
         Directory.CreateDirectory(dirPath);
     }
+
+    public static void DeleteFiles(string dirPath, string excludeExt = "")
+    {
+        if (!Directory.Exists(dirPath))
+            return;
+
+        var files = Directory.GetFiles(dirPath);
+        if (!string.IsNullOrWhiteSpace(excludeExt))
+            files = files.Where(f => !f.EndsWith(excludeExt)).ToArray();
+        
+        foreach (var file in files)
+            File.Delete(file);
+    }
     public static string TrimInvalidChar(string? value)
     {
         if (string.IsNullOrWhiteSpace(value))
