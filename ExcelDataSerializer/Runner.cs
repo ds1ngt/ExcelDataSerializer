@@ -27,9 +27,9 @@ public abstract class Runner
         Logger.Instance.LogLine($"> 데이터 저장 경로: {info.DataOutputDir}");
         Logger.Instance.LogLine($"> 총 {info.XlsxFiles.Count} 워크시트");
 
-        Util.Util.DeleteAndRecreateDirectory(info.DataOutputDir);
-        Util.Util.DeleteAndRecreateDirectory(info.CSharpOutputDir);
-
+        Util.Util.DeleteFiles(info.DataOutputDir, ".meta");
+        Util.Util.DeleteFiles(info.CSharpOutputDir, ".meta");
+        
         // 엑셀 변환 준비 (Excel -> DataTable)
         var dataTables = await ExcelConvertAsync(info);
         
