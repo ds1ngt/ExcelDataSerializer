@@ -1,4 +1,10 @@
 # Changelog
+## [1.0.3] - 2024-06-24
+### Fixed
+- 데이터 생성 코드 private 으로 변경
+- 빌드 환경 및 경로 수정
+- 빌드 프로젝트명 변경 (Mpc -> BillionaireClient)
+
 ## [1.0.2] - 2024-06-20
 ### Fixed
 - C# 및 Data Meta 파일 삭제하지 않도록 수정
