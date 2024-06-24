@@ -8,18 +8,18 @@ namespace ExcelDataSerializer.DataExtractor;
 public abstract partial class MessagePackExtractor
 {
 #region Fields
-    private const string PROJECT_DIR = "Mpc";
+    private const string PROJECT_DIR = "BillionaireClient";
     private const string BUILD_DIR = "Build";
     private const string DATA_DIR = "Data";
     private const string MESSAGEPACK_GENERATED_FILE = "MessagePackGenerated.cs";
-    private static readonly string _mpcGeneratedFilePath = Path.Combine(PROJECT_DIR, MESSAGEPACK_GENERATED_FILE);
+    private static readonly string _projectGeneratedFilePath = Path.Combine(PROJECT_DIR, MESSAGEPACK_GENERATED_FILE);
 
     /// <summary>
     /// (From FilePath, To FileName)
     /// </summary>
     private static readonly (string, string)[] _copyGeneratedCode = new (string, string)[]
     {
-        (_mpcGeneratedFilePath, MESSAGEPACK_GENERATED_FILE),
+        (_projectGeneratedFilePath, MESSAGEPACK_GENERATED_FILE),
         (Path.Combine(PROJECT_DIR, $"{Constant.INTERFACE_NAME}.cs"), $"{Constant.INTERFACE_NAME}.cs"),
     };
 #endregion // Fields
@@ -30,7 +30,7 @@ public abstract partial class MessagePackExtractor
         await CompileAsync(classInfos);
         await ExportDataAsync(dataTables);
         await BuildCsProj(PROJECT_DIR, BUILD_DIR);
-        await ExtractMessagePackDataAsync(PROJECT_DIR);
+        await ExtractMessagePackDataAsync(PROJECT_DIR, BUILD_DIR);
         CopyOutputFiles(PROJECT_DIR, info);
         
         Logger.Instance.LogLine($"Done.");
@@ -104,7 +104,7 @@ public abstract partial class MessagePackExtractor
         var request = new ProcessUtil.RequestInfo
         {
             Exec = "mpc",
-            Argument = $"-i {projectDir} -o {_mpcGeneratedFilePath} -n com.haegin.Billionaire.Data -r BillionaireClient",
+            Argument = $"-i {projectDir} -o {_projectGeneratedFilePath} -n com.haegin.Billionaire.Data -r BillionaireClient",
         };
 
         request.Print();
@@ -117,7 +117,7 @@ public abstract partial class MessagePackExtractor
         var request = new ProcessUtil.RequestInfo
         {
             Exec = "dotnet",
-            Argument = $"build -o {buildDir}",
+            Argument = $"build -o {buildDir} --configuration Release",
             WorkingDirectory = workingDir,
         };
         
@@ -139,13 +139,13 @@ public abstract partial class MessagePackExtractor
 #endregion // Export Data
 
 #region Extract MessagePack Data
-    private static async UniTask ExtractMessagePackDataAsync(string projectDir)
+    private static async UniTask ExtractMessagePackDataAsync(string projectDir, string buildDir)
     {
         var workingDir = Path.Combine(Directory.GetCurrentDirectory(), projectDir);
         var request = new ProcessUtil.RequestInfo
         {
             Exec = "dotnet",
-            Argument = "run",
+            Argument = $"run  -o {buildDir} --configuration Release",
             WorkingDirectory = workingDir,
             OutputDataReceived = msg => Logger.Instance.LogLine($"[Extract] {msg}"),
         };
