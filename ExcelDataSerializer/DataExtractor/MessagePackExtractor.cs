@@ -27,6 +27,10 @@ public abstract partial class MessagePackExtractor
 #region Public Methods
     public static async UniTask RunAsync(DataClassInfo[] classInfos, Dictionary<string, TableInfo.DataTable> dataTables, RunnerInfo info)
     {
+        Logger.Instance.LogLine();
+        Logger.Instance.LogLine($"Project Directory: {Path.Combine(Directory.GetCurrentDirectory(), PROJECT_DIR)}");
+        Logger.Instance.LogLine();
+
         await CompileAsync(classInfos);
         await ExportDataAsync(dataTables);
         await BuildCsProj(PROJECT_DIR, BUILD_DIR);
