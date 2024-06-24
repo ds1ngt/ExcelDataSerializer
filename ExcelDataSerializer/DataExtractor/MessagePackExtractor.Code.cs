@@ -4,11 +4,11 @@ public abstract partial class MessagePackExtractor
 {
     private static readonly Dictionary<string, string> _fileMap = new Dictionary<string, string>
     {
-        {"Mpc.csproj", MPC_PROJ},
+        {"BillionaireClient.csproj", PROJ},
         {"DataTable.cs", DATA_TABLE_CLASS},
         {"Extractor.cs", EXTRACTOR_CLASS},
     };
-    private const string MPC_PROJ = @"<Project Sdk=""Microsoft.NET.Sdk"">
+    private const string PROJ = @"<Project Sdk=""Microsoft.NET.Sdk"">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
@@ -29,16 +29,16 @@ public abstract partial class MessagePackExtractor
 </Project>
 ";
     
-    private const string DATA_TABLE_CLASS = @"namespace Mpc;
+    private const string DATA_TABLE_CLASS = @"namespace BillionaireClient;
 
-public enum TableType
+enum TableType
 {
     List,
     Dictionary,
     Enum,
     Interface
 }
-public enum SchemaTypes
+enum SchemaTypes
 {
     None,
     Primary,
@@ -52,7 +52,7 @@ public enum SchemaTypes
     Custom,
 }
 
-public enum Types
+enum Types
 {
     // Primitive Types
     Byte,
@@ -81,7 +81,7 @@ public enum Types
     Quaternion,
 }
 
-public record DataTable
+record DataTable
 {
     public string Name;
     public string ClassName;
@@ -90,17 +90,17 @@ public record DataTable
     public TableType TableType;
 }
 
-public record Header
+record Header
 {
     public int? PrimaryIndex;
     public List<SchemaCell> SchemaCells = new();
 }
 
-public record DataRow
+internal record DataRow
 {
     public DataCell[] DataCells = Array.Empty<DataCell>();
 }
-public record SchemaCell
+record SchemaCell
 {
     public string Name;
     public int Index;
@@ -108,13 +108,13 @@ public record SchemaCell
     public string ValueType = string.Empty;
 }
 
-public record DataCell
+record DataCell
 {
     public int Index;
     public string Value = string.Empty;
 }
 
-public static class TypesExtension
+static class TypesExtension
 {
     private static readonly Dictionary<string, Types> _strTypesMap = new();
 
@@ -256,9 +256,9 @@ using Cysharp.Threading.Tasks;
 using MessagePack;
 using Newtonsoft.Json;
 
-namespace Mpc;
+namespace BillionaireClient;
 
-public class Extractor
+class Extractor
 {
     private const string TYPE_NAMESPACE = ""com.haegin.Billionaire.Data"";
     private const string JSON_FILENAME = ""Data.json"";
@@ -345,7 +345,7 @@ public class Extractor
 
         var serialized = MessagePackSerializer.Serialize(tableInstance) as byte[];
         var base64String = Convert.ToBase64String(serialized);
-        await SaveDataTableAsync($""{table.Name}.txt"", base64String);
+        await SaveDataTableAsync($""{table.Name}.data"", base64String);
     }
     private static string GetDataTypeStr(string className) => $""{TYPE_NAMESPACE}.{className}Data"";
     private static string GetTableTypeStr(string className) => $""{TYPE_NAMESPACE}.{className}DataTable"";
