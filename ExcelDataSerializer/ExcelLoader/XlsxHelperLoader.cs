@@ -7,6 +7,11 @@ namespace ExcelDataSerializer.ExcelLoader;
 
 public class XlsxHelperLoader : ILoader
 {
+    private const int NAME_ROW_IDX = 0;
+    private const int SCHEMA_ROW_IDX = 1;
+    private const int TARGET_ROW_IDX = 2;
+    private const int VALID_ROW_LENGTH = 3;
+    private const char TARGET_CLIENT = 'C';
     public async UniTask LoadWorkbookAsync(FileStream fs, List<TableInfo.DataTable> dataTables)
     {
         using var workbook = XlsxReader.OpenWorkbook(fs, false);
@@ -31,17 +36,17 @@ public class XlsxHelperLoader : ILoader
         Logger.Instance.LogLine($" - {sheetName}");
 
         var rows = sheet.ToArray();
-        if (rows.Length < 2)
+        if (rows.Length < VALID_ROW_LENGTH)
             return null;
 
-        var header = CreateHeaderRow(rows[0], rows[1]);
+        var header = CreateHeaderRow(rows[NAME_ROW_IDX], rows[SCHEMA_ROW_IDX], rows[TARGET_ROW_IDX]);
         if (header == null)
             return null;
 
         var validColumnIndices = header.SchemaCells
             .Select(cell => cell.Index)
             .ToArray();
-        var validColumnNames = GetValidColumnNames(rows[0]);
+        var validColumnNames = GetValidColumnNames(rows[NAME_ROW_IDX]);
 
         var result = new TableInfo.DataTable
         {
@@ -63,16 +68,21 @@ public class XlsxHelperLoader : ILoader
         return result;
     }
 #region Header Row
-    private static TableInfo.Header? CreateHeaderRow(Row headerRow, Row schemaRow)
+    private static TableInfo.Header? CreateHeaderRow(Row headerRow, Row schemaRow, Row targetRow)
     {
         var result = new TableInfo.Header();
-        var validHeaderRow = headerRow
-            .Where(cell => !string.IsNullOrWhiteSpace(cell.CellValue) && Util.Util.IsValidName(cell.CellValue))
-            .ToArray();
-        var validSchemaRow = schemaRow
-            .Where(cell => Array.FindIndex(validHeaderRow, headerCell => headerCell.ColumnName == cell.ColumnName) != -1)
+        var validTargetRow = targetRow
+            .Where(FilterTargetRow)
             .ToArray();
 
+        var validHeaderRow = headerRow
+            .Where(cell => FilterHeaderRow(validTargetRow, cell))
+            .ToArray();
+
+        var validSchemaRow = schemaRow
+            .Where(cell => FilterSchemaRow(validHeaderRow, cell))
+            .ToArray();
+        
         if (validHeaderRow.Length != validSchemaRow.Length)
             return null;
 
@@ -121,6 +131,29 @@ public class XlsxHelperLoader : ILoader
         return result;
     }
 
+    private static bool FilterTargetRow(Cell cell)
+    {
+        return !string.IsNullOrWhiteSpace(cell.CellValue) && cell.CellValue.ToUpper().Contains(TARGET_CLIENT);
+    }
+
+    private static bool FilterHeaderRow(Cell[] validTargetRow, Cell cell)
+    {
+        if (!IsValidTargetCell(validTargetRow, cell))
+            return false;
+        
+        return !string.IsNullOrWhiteSpace(cell.CellValue) && Util.Util.IsValidName(cell.CellValue);
+    }
+
+    private static bool FilterSchemaRow(Cell[] validHeaderRow, Cell cell)
+    {
+        return Array.FindIndex(validHeaderRow, headerCell => headerCell.ColumnName == cell.ColumnName) != -1;
+    }
+
+    private static bool IsValidTargetCell(Cell[] targetRow, Cell cell)
+    {
+        var idx = Array.FindIndex(targetRow, targetCell => targetCell.ColumnName == cell.ColumnName);
+        return idx != -1;
+    }
     private static bool IsValidHeaderCell(string name)
     {
         var validName = Util.Util.GetValidName(name);

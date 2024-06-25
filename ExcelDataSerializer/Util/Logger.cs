@@ -7,17 +7,19 @@ public class Logger : IDisposable
 
     private FileStream? _fs;
     private StreamWriter? _sw;
+    private readonly string _logPath;
+    public string LogPath => _logPath;
     public event Action<string, bool> OnLog = (msg, lineBreak) => { };
     public Logger()
     {
-        var path = Path.Combine(Path.GetTempPath(), "ExcelDataSerializer", "Log", $"{DateTime.Now.ToString("yyMMdd_HHmmss")}.log");
-        var dir = Path.GetDirectoryName(path);
+        _logPath = Path.Combine(Path.GetTempPath(), "ExcelDataSerializer", "Log", $"{DateTime.Now.ToString("yyMMdd_HHmmss")}.log");
+        var dir = Path.GetDirectoryName(_logPath);
         if (!Directory.Exists(dir))
             Directory.CreateDirectory(dir);
 
-        _fs = new FileStream(path, FileMode.OpenOrCreate);
+        _fs = new FileStream(_logPath, FileMode.OpenOrCreate);
         _sw = new StreamWriter(_fs);
-        Console.WriteLine($"Log File Created: {path}");
+        Console.WriteLine($"Log File Created: {_logPath}");
     }
     public void Log(string msg = "")
     {

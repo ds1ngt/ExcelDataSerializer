@@ -26,7 +26,8 @@ public abstract class Runner
         Logger.Instance.LogLine($"> C# 저장 경로: {info.CSharpOutputDir}");
         Logger.Instance.LogLine($"> 데이터 저장 경로: {info.DataOutputDir}");
         Logger.Instance.LogLine($"> 총 {info.XlsxFiles.Count} 워크시트");
-
+        Logger.Instance.LogLine($"> 로그 파일 : {Logger.Instance.LogPath}");
+        
         Util.Util.DeleteFiles(info.DataOutputDir, ".meta");
         Util.Util.DeleteFiles(info.CSharpOutputDir, ".meta");
         

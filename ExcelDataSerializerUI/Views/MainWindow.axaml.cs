@@ -20,6 +20,12 @@ public partial class MainWindow : Window
         InitializeComponent();
     }
 
+    public void Init()
+    {
+        Logger.Instance.OnLog -= OnLog;
+        Logger.Instance.OnLog += OnLog;
+        Logger.Instance.LogLine($"> 로그 파일 : {Logger.Instance.LogPath}");
+    }
     private void OnOpenExcelFolder(object? sender, RoutedEventArgs e)
     {
         _ = OpenFolderAsync("Excel 경로 선택", path => {
@@ -82,9 +88,6 @@ public partial class MainWindow : Window
 
         vm.ClearLog();
 
-        Logger.Instance.OnLog -= OnLog;
-        Logger.Instance.OnLog += OnLog;
-
         var excelFiles = Directory.GetFiles(vm.ExcelPath, "*.xls*", SearchOption.AllDirectories);
         var csOutput = vm.CsOutputPath;
         var dataOutput = vm.DataOutputPath;
@@ -93,7 +96,7 @@ public partial class MainWindow : Window
         runnerInfo.AddExcelFiles(excelFiles);
         runnerInfo.SetOutputDirectory(csOutput, dataOutput);
         runnerInfo.ExcelLoaderType = _loaderType;
-
+        
         await Runner.ExecuteAsync(runnerInfo);
         vm.IsBusy = false;
     }
