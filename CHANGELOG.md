@@ -1,4 +1,8 @@
 # Changelog
+## [1.0.5] - 2024-06-25
+### Fixed
+- 데이터 파싱 버그 수정
+
 ## [1.0.4] - 2024-06-25
 ### Added
 - Target 지정 적용 (Server, Client)
