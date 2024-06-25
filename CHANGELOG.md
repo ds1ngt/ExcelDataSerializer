@@ -1,4 +1,9 @@
 # Changelog
+## [1.0.4] - 2024-06-25
+### Added
+- Target 지정 적용 (Server, Client)
+- 앱 실행시 로그 파일 경로 출력
+
 ## [1.0.3] - 2024-06-24
 ### Fixed
 - 데이터 생성 코드 private 으로 변경
