@@ -60,19 +60,17 @@ public abstract class Runner
             var dataTables = await Loader.LoadXlsAsync(filePath, loader);
             foreach (var table in dataTables)
             {
-                if (result.ContainsKey(table.Name))
+                if (result.TryAdd(table.Name, table))
+                    continue;
+
+                if (table.Name == Constant.Enum)
                 {
-                    if (table.Name == Constant.Enum)
-                    {
-                        var enumTable = result[table.Name];
-                        if (TryMergeEnumSheet(enumTable, table, out var merged))
-                            result[table.Name] = merged;
-                    }
-                    else
-                        Logger.Instance.LogLine($"ExcelConvert : 이름 중복!!! {filePath} : {table.Name}");
+                    var enumTable = result[table.Name];
+                    if (TryMergeEnumSheet(enumTable, table, out var merged))
+                        result[table.Name] = merged;
                 }
                 else
-                    result.Add(table.Name, table);
+                    Logger.Instance.LogLine($"ExcelConvert : 이름 중복!!! {filePath} : {table.Name}");
             }
         }
 
