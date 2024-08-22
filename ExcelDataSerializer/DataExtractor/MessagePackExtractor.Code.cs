@@ -491,75 +491,75 @@ class Extractor
         {
             case Types.Byte:
             {
-                byte.TryParse(strValue, out var value);
+                var value = ParseByte(strValue);
                 property.SetValue(instance, value);
                 return value;
             }
             case Types.Short:
             case Types.Int16:
             {
-                short.TryParse(strValue, out var value);
+                var value = ParseShort(strValue);
                 property.SetValue(instance, value);
                 return value;
             }
             case Types.UShort:
             case Types.UInt16:
             {
-                ushort.TryParse(strValue, out var value);
+                var value = ParseUshort(strValue);
                 property.SetValue(instance, value);
                 return value;
             }
             case Types.Int:
             case Types.Int32:
             {
-                int.TryParse(strValue, out var value);
+                var value = ParseInt(strValue);
                 property.SetValue(instance, value);
                 return value;
             }
             case Types.UInt:
             case Types.UInt32:
             {
-                uint.TryParse(strValue, out var value);
+                var value = ParseUInt(strValue);
                 property.SetValue(instance, value);
                 return value;
             }
             case Types.Long:
             case Types.Int64:
             {
-                long.TryParse(strValue, out var value);
+                var value = ParseLong(strValue);
                 property.SetValue(instance, value);
                 return value;
             }
             case Types.ULong:
             case Types.UInt64:
             {
-                ulong.TryParse(strValue, out var value);
+                var value = ParseULong(strValue);
                 property.SetValue(instance, value);
                 return value;
             }
             case Types.Float:
             case Types.Single:
             {
-                float.TryParse(strValue, out var value);
+                var value = ParseFloat(strValue);
                 property.SetValue(instance, value);
                 return value;
             }
             case Types.Double:
             {
-                double.TryParse(strValue, out var value);
+                var value = ParseDouble(strValue);
                 property.SetValue(instance, value);
                 return value;
             }
             case Types.Decimal:
             {
-                decimal.TryParse(strValue, out var value);
+                var value = ParseDecimal(strValue);
                 property.SetValue(instance, value);
                 return value;
             }
             case Types.Bool:
             case Types.Boolean:
             {
-                bool.TryParse(strValue, out var value);
+                var value = ParseBool(strValue);
                 property.SetValue(instance, value);
                 return value;
             }
@@ -732,6 +732,100 @@ class Extractor
     }
 #endregion
 
+#region Parse Data
+
+    static byte ParseByte(string valueStr)
+    {
+        if (byte.TryParse(valueStr, out var value))
+            return value;
+
+        value = (byte)ParseFloat(valueStr);
+        Console.WriteLine($""Parse Byte Fixed = {valueStr} -> {value}"");
+
+        return value;
+    }
+    static short ParseShort(string valueStr)
+    {
+        if (short.TryParse(valueStr, out var value)) 
+            return value;
+
+        value = (short)ParseFloat(valueStr);
+        Console.WriteLine($""Parse Short Fixed = {valueStr} -> {value}"");
+
+        return value;
+    }
+    static ushort ParseUshort(string valueStr)
+    {
+        if (ushort.TryParse(valueStr, out var value))
+            return value;
+
+        value = (ushort)ParseFloat(valueStr);
+        Console.WriteLine($""Parse UShort Fixed = {valueStr} -> {value}"");
+
+        return value;
+    }
+    static int ParseInt(string valueStr)
+    {
+        if (int.TryParse(valueStr, out var value))
+            return value;
+
+        value = (int)ParseFloat(valueStr);
+        Console.WriteLine($""Parse Int Fixed = {valueStr} -> {value}"");
+
+        return value;
+    }
+    static uint ParseUInt(string valueStr)
+    {
+        if (uint.TryParse(valueStr, out var value))
+            return value;
+
+        value = (uint)ParseFloat(valueStr);
+        Console.WriteLine($""Parse UInt Fixed = {valueStr} -> {value}"");
+
+        return value;
+    }
+    static long ParseLong(string valueStr)
+    {
+        if (long.TryParse(valueStr, out var value))
+            return value;
+
+        value = (long)ParseFloat(valueStr);
+        Console.WriteLine($""Parse Long Fixed = {valueStr} -> {value}"");
+
+        return value;
+    }
+    static ulong ParseULong(string valueStr)
+    {
+        if (ulong.TryParse(valueStr, out var value))
+            return value;
+
+        value = (ulong)ParseFloat(valueStr);
+        Console.WriteLine($""Parse ULong Fixed = {valueStr} -> {value}"");
+
+        return value;
+    }
+    static float ParseFloat(string valueStr)
+    {
+        _ = float.TryParse(valueStr, out var value);
+        return value;
+    }
+    static double ParseDouble(string valueStr)
+    {
+        _ = double.TryParse(valueStr, out var value);
+        return value;
+    }
+    static decimal ParseDecimal(string valueStr)
+    {
+        _ = decimal.TryParse(valueStr, out var value);
+        return value;
+    }
+
+    static bool ParseBool(string valueStr)
+    {
+        _ = bool.TryParse(valueStr, out var value);
+        return value;
+    }
+#endregion // Parse Data
 #region Save Data
 
     private static async UniTask SaveDataTableAsync(string fileName, string base64String)
