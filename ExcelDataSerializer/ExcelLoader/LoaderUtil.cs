@@ -21,7 +21,8 @@ public abstract class LoaderUtil
         for (var i = sheetColumn.Length - 1; i >= 0; --i)
         {
             var n = sheetColumn[i] - 'A';
-            result += 26 * digit + n;
+            var sum = i == sheetColumn.Length - 1 ? n : 26 * digit * (n+1);
+            result += sum;
             digit++;
         }
         return result;
