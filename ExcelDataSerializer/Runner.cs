@@ -33,6 +33,8 @@ public abstract class Runner
         
         // 엑셀 변환 준비 (Excel -> DataTable)
         var dataTables = await ExcelConvertAsync(info);
+        if (dataTables == null)
+            return;
         
         // 데이터 클래스 생성 (DataTable -> C#)
         var classInfos = await GenerateDataClassMessagePackAsync(info.CSharpOutputDir, dataTables);
@@ -57,7 +59,11 @@ public abstract class Runner
         var loader = GetLoader(info.ExcelLoaderType);
         foreach (var filePath in info.XlsxFiles)
         {
-            var dataTables = await Loader.LoadXlsAsync(filePath, loader);
+            var (dataTables, isValid) = await Loader.LoadXlsAsync(filePath, loader);
+            
+            if (!isValid)
+                return null;
+
             foreach (var table in dataTables)
             {
                 if (result.TryAdd(table.Name, table))
@@ -116,7 +122,7 @@ public abstract class Runner
     }
     private static ILoader GetLoader(ExcelLoaderType type) => type switch
     {
-        ExcelLoaderType.ClosedXml => new ClosedXmlLoader(),
+        // ExcelLoaderType.ClosedXml => new ClosedXmlLoader(),
         _ => new XlsxHelperLoader()
     };
 

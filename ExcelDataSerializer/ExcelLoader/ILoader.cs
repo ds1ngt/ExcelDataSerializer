@@ -5,5 +5,5 @@ namespace ExcelDataSerializer.ExcelLoader;
 
 public interface ILoader
 {
-    UniTask LoadWorkbookAsync(FileStream fs, List<TableInfo.DataTable> dataTables);
+    UniTask<bool> LoadWorkbookAsync(FileStream fs, List<TableInfo.DataTable> dataTables);
 }
