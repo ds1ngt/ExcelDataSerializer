@@ -10,6 +10,8 @@ public class Logger : IDisposable
     private readonly string _logPath;
     public string LogPath => _logPath;
     public event Action<string, bool> OnLog = (msg, lineBreak) => { };
+    public event Action<string, bool> OnLogError = (msg, lineBreak) => { };
+
     public Logger()
     {
         _logPath = Path.Combine(Path.GetTempPath(), "ExcelDataSerializer", "Log", $"{DateTime.Now.ToString("yyMMdd_HHmmss")}.log");
@@ -38,6 +40,23 @@ public class Logger : IDisposable
         OnLog.Invoke(msg, true);
     }
 
+    public void LogError(string msg = "")
+    {
+        Console.Write(msg);
+        _sw?.Write(msg);
+        _sw?.Flush();
+        OnLogError.Invoke(msg, false);
+    }
+
+    public void LogErrorLine(string msg = "", bool printConsole = true)
+    {
+        var errorMessage = $"[ERROR] {msg}";
+        if (printConsole)
+            Console.WriteLine(errorMessage);
+        _sw?.WriteLine(errorMessage);
+        _sw?.Flush();
+        OnLogError.Invoke(errorMessage, true);
+    }
     public void Dispose()
     {
         _fs?.Dispose();

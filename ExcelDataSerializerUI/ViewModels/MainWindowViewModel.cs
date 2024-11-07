@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Reflection;
-using System.Text;
 using ExcelDataSerializer;
 using ExcelDataSerializerUI.Models;
 using ReactiveUI;
+using Logger = ExcelDataSerializerUI.Util.Logger;
 
 namespace ExcelDataSerializerUI.ViewModels;
 
@@ -15,9 +15,13 @@ public class MainWindowViewModel : ViewModelBase
     private string _csOutputPath;
     private string _dataOutputPath;
     private SettingInfo? _settingInfo;
-    
-    private StringBuilder _logSb = new();
+
+    private readonly Logger _log = new();
+    private readonly Logger _errorLog = new();
+
     private string _logStr = string.Empty;
+    private string _errorStr = string.Empty;
+
     private string _version;
     private string _libraryVersion;
     private bool _isBusy;
@@ -87,6 +91,11 @@ public class MainWindowViewModel : ViewModelBase
         set => this.RaiseAndSetIfChanged(ref _logStr, value);
     }
 
+    public string ErrorLog
+    {
+        get => _errorStr;
+        set => this.RaiseAndSetIfChanged(ref _errorStr, value);
+    }
     public bool IsBusy
     {
         get => _isBusy;
@@ -109,22 +118,43 @@ public class MainWindowViewModel : ViewModelBase
 #region Log
     public void ClearLog()
     {
-        _logSb.Clear();
+        _log.Clear();
         RefreshLogStr();
     }
 
     public void AppendLog(string msg)
     {
-        _logSb.Append(msg);
+        _log.AppendLog(msg);
         RefreshLogStr();
     }
 
     public void AppendLogLine(string msg)
     {
-        _logSb.AppendLine(msg);
+        _log.AppendLogLine(msg);
         RefreshLogStr();
     }
-    private void RefreshLogStr() => Log = _logSb.ToString();
+    private void RefreshLogStr() => Log = _log.Message;
 #endregion // Log
+
+#region ErrorLog
+    public void ClearErrorLog()
+    {
+        _errorLog.Clear();
+        RefreshErrorLogStr();
+    }
+
+    public void AppendErrorLog(string msg)
+    {
+        _errorLog.AppendLog(msg);
+        RefreshErrorLogStr();
+    }
+
+    public void AppendErrorLogLine(string msg)
+    {
+        _errorLog.AppendLogLine(msg);
+        RefreshErrorLogStr();
+    }
+    private void RefreshErrorLogStr() => ErrorLog = _errorLog.Message;
+#endregion // ErrorLog
 #pragma warning restore CA1822 // Mark members as static
 }

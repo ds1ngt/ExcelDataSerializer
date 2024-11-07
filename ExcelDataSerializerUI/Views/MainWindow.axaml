@@ -49,6 +49,7 @@
                 <li:LoadingIndicator IsActive="{Binding IsBusy}" Mode="Arc" Height="10" SpeedRatio="1.2" />
             </DockPanel>
         </Border>
+        <Label HorizontalAlignment="Center">INFO</Label>
         <Border BorderBrush="Black"
                 BorderThickness="2"
                 CornerRadius="3"
@@ -58,7 +59,21 @@
                           VerticalScrollBarVisibility="Auto"
                           VerticalAlignment="Stretch"
                           MaxHeight="500">
-                <SelectableTextBlock Text="{Binding Log}"></SelectableTextBlock>
+                    <SelectableTextBlock Text="{Binding Log}"></SelectableTextBlock>
+            </ScrollViewer>
+        </Border>
+
+        <Label HorizontalAlignment="Center">ERROR</Label>
+        <Border BorderBrush="Black"
+                BorderThickness="2"
+                CornerRadius="3"
+                Margin="10" Padding="10"
+                VerticalAlignment="Stretch">
+            <ScrollViewer AllowAutoHide="True"
+                          VerticalScrollBarVisibility="Auto"
+                          VerticalAlignment="Stretch"
+                          MaxHeight="500">
+                    <SelectableTextBlock Text="{Binding ErrorLog}"></SelectableTextBlock>
             </ScrollViewer>
         </Border>
     </StackPanel>

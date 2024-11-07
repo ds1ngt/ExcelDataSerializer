@@ -12,36 +12,57 @@ public class XlsxHelperLoader : ILoader
     private const int TARGET_ROW_IDX = 2;
     private const int VALID_ROW_LENGTH = 3;
     private const char TARGET_CLIENT = 'C';
-    public async UniTask LoadWorkbookAsync(FileStream fs, List<TableInfo.DataTable> dataTables)
+    
+    /// <summary>
+    /// 워크북 로드
+    /// </summary>
+    /// <param name="fs">파일 스트림</param>
+    /// <param name="dataTables">테이블 리스트</param>
+    /// <returns>False이면 즉시 중단할 것</returns>
+    public async UniTask<bool> LoadWorkbookAsync(FileStream fs, List<TableInfo.DataTable> dataTables)
     {
         using var workbook = XlsxReader.OpenWorkbook(fs, false);
         foreach (var sheet in workbook.Worksheets)
         {
-            var dataTable = await CreateDataTableAsync(sheet);
-            if (dataTable == null) continue;
+            var (dataTable, isError) = await CreateDataTableAsync(sheet);
+            if (dataTable == null)
+            {
+                if (!isError)
+                    return true;
+
+                Logger.Instance.LogErrorLine($"테이블 파싱 오류 : {sheet.Name}");
+                return false;
+            }
         
             // dataTable.PrintHeader();
             // dataTable.PrintData();
             dataTables.Add(dataTable);
         }
+
+        return true;
     }
     
-    private static async Task<TableInfo.DataTable?> CreateDataTableAsync(Worksheet sheet)
+    /// <summary>
+    /// 워크시트 파싱 및 DataTable 타입으로 변환
+    /// </summary>
+    /// <param name="sheet">변환된 데이터</param>
+    /// <returns>True: 파싱에러, False: 성공 또는 필터링된 시트</returns>
+    private static async Task<(TableInfo.DataTable?, bool)> CreateDataTableAsync(Worksheet sheet)
     {
         var sheetName = Util.Util.TrimInvalidChar(sheet.Name);
         if (!Util.Util.IsValidName(sheetName))
-            return null;
+            return (null, false);
 
         Logger.Instance.LogLine();
         Logger.Instance.LogLine($" - {sheetName}");
 
         var rows = sheet.ToArray();
         if (rows.Length < VALID_ROW_LENGTH)
-            return null;
+            return (null, false);;
 
         var header = CreateHeaderRow(rows[NAME_ROW_IDX], rows[SCHEMA_ROW_IDX], rows[TARGET_ROW_IDX]);
         if (header == null)
-            return null;
+            return (null, true);;
 
         var validColumnIndices = header.SchemaCells
             .Select(cell => cell.Index)
@@ -56,7 +77,7 @@ public class XlsxHelperLoader : ILoader
             Data = await CreateDataRowsAsync(header, rows, validColumnIndices, validColumnNames),
             TableType = LoaderUtil.GetTableType(header),
         };
-        return result;
+        return (result, false);
     }
 
     private static string[] GetValidColumnNames(Row row)
@@ -109,8 +130,13 @@ public class XlsxHelperLoader : ILoader
             var schemaInfo = LoaderUtil.ParseSchemaInfo(tokens);
             if (schemaInfo.IsPrimary)
             {
-                if(result.PrimaryIndex != null)
-                    throw new ArgumentException($"Primary Key Duplicated...({result.PrimaryIndex}, {i})");
+                if (result.PrimaryIndex != null)
+                {
+                    Logger.Instance.LogErrorLine($"Primary Key Duplicated...({result.PrimaryIndex}, {i})");
+                    return null;
+                    // throw new ArgumentException($"Primary Key Duplicated...({result.PrimaryIndex}, {i})");
+                }
+
                 result.PrimaryIndex = index;
             }
 

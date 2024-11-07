@@ -24,6 +24,9 @@ public partial class MainWindow : Window
     {
         Logger.Instance.OnLog -= OnLog;
         Logger.Instance.OnLog += OnLog;
+        Logger.Instance.OnLogError -= OnLogError;
+        Logger.Instance.OnLogError += OnLogError;
+
         Logger.Instance.LogLine($"> 로그 파일 : {Logger.Instance.LogPath}");
     }
     private void OnOpenExcelFolder(object? sender, RoutedEventArgs e)
@@ -87,6 +90,7 @@ public partial class MainWindow : Window
         await UniTask.Yield();
 
         vm.ClearLog();
+        vm.ClearErrorLog();
 
         var excelFiles = Directory.GetFiles(vm.ExcelPath, "*.xls*", SearchOption.AllDirectories);
         var csOutput = vm.CsOutputPath;
@@ -112,6 +116,16 @@ public partial class MainWindow : Window
             vm.AppendLog(msg);
     }
 
+    private void OnLogError(string msg, bool lineBreak)
+    {
+        if (DataContext is not MainWindowViewModel vm)
+            return;
+
+        if (lineBreak)
+            vm.AppendErrorLogLine(msg);
+        else
+            vm.AppendErrorLog(msg);
+    }
     private bool Validate()
     {
         if (DataContext is not MainWindowViewModel vm)
