@@ -28,7 +28,7 @@ public class XlsxHelperLoader : ILoader
             if (dataTable == null)
             {
                 if (!isError)
-                    return true;
+                    continue;
 
                 Logger.Instance.LogErrorLine($"테이블 파싱 오류 : {sheet.Name}");
                 return false;
