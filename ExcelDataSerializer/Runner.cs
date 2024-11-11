@@ -27,7 +27,14 @@ public abstract class Runner
         Logger.Instance.LogLine($"> 데이터 저장 경로: {info.DataOutputDir}");
         Logger.Instance.LogLine($"> 총 {info.XlsxFiles.Count} 워크시트");
         Logger.Instance.LogLine($"> 로그 파일 : {Logger.Instance.LogPath}");
-        
+
+        var isValidDotnet = await MessagePackExtractor.CheckDotnetAsync();
+        if (!isValidDotnet)
+        {
+            Logger.Instance.LogErrorLine("Dotnet이 설치되지 않았습니다. 다운로드: https://dotnet.microsoft.com/ko-kr/download/dotnet/8.0");
+            return;
+        }
+
         Util.Util.DeleteFiles(info.DataOutputDir, ".meta");
         Util.Util.DeleteFiles(info.CSharpOutputDir, ".meta");
         
