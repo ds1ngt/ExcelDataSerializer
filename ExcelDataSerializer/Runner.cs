@@ -155,21 +155,21 @@ public abstract class Runner
         return result.ToArray();
     }
 
-    private static DataClassInfo[] GenerateDataClassMemoryPack(string outputDir, Dictionary<string, TableInfo.DataTable> dataTables)
-    {
-        var result = new List<DataClassInfo>();
-        foreach (var kvp in dataTables)
-        {
-            var key = kvp.Key;
-            var value = kvp.Value;
-            var saveFilePath = Path.Combine(outputDir, $"{key}Table.cs");
-            var classInfo = MemoryPackGenerator.GenerateDataClass(value);
-            result.Add(classInfo);
-            Util.Util.SaveToFileAsync(saveFilePath, classInfo.Code).Forget();
-        }
-
-        return result.ToArray();
-    }
+    // private static DataClassInfo[] GenerateDataClassMemoryPack(string outputDir, Dictionary<string, TableInfo.DataTable> dataTables)
+    // {
+    //     var result = new List<DataClassInfo>();
+    //     foreach (var kvp in dataTables)
+    //     {
+    //         var key = kvp.Key;
+    //         var value = kvp.Value;
+    //         var saveFilePath = Path.Combine(outputDir, $"{key}Table.cs");
+    //         var classInfo = MemoryPackGenerator.GenerateDataClass(value);
+    //         result.Add(classInfo);
+    //         Util.Util.SaveToFileAsync(saveFilePath, classInfo.Code).Forget();
+    //     }
+    //
+    //     return result.ToArray();
+    // }
 
     private static DataClassInfo[] GenerateDataClassRecord(string csOutputDir, string dataOutputDir, Dictionary<string, TableInfo.DataTable> dataTables)
     {

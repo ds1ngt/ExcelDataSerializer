@@ -27,7 +27,14 @@ public partial class CodeBuilder : IDisposable
     {
         _namespace.Imports.Add(new CodeNamespaceImport(ns));
     }
-    public void AddMember(CodeTypeDeclaration cls) => _namespace.Types.Add(cls);
+    public void AddMember(CodeTypeDeclaration? cls)
+    {
+        if (cls == null)
+            return;
+
+        _namespace.Types.Add(cls);
+    }
+
     public string GenerateCode()
     {
         var compileUnit = new CodeCompileUnit();
