@@ -41,6 +41,29 @@ public abstract partial class MessagePackExtractor
     }
 #endregion // Public Methods
 
+#region Check Dotnet
+    public static async UniTask<bool> CheckDotnetAsync()
+    {
+        var isValid = true;
+        var request = new ProcessUtil.RequestInfo
+        {
+            Exec = "dotnet",
+            Argument = "--list-sdks",
+            OutputDataReceived = msg => OnOutput(msg, "DotNet 정보"),
+            ErrorDataReceived = msg =>
+            {
+                if (string.IsNullOrWhiteSpace(msg))
+                    return;
+
+                isValid = false;
+                OnError(msg);
+            }
+        };
+        await ProcessUtil.RunAsync(request);
+        return isValid;
+    }
+#endregion // Check Dotnet
+
 #region Compile
     private static async UniTask CompileAsync(DataClassInfo[] classInfos)
     {
@@ -54,22 +77,22 @@ public abstract partial class MessagePackExtractor
     }
     private static async UniTask<bool> IsMpcInstalledAsync()
     {
+        var isInstalled = false;
         var request = new ProcessUtil.RequestInfo
         {
             Exec = "dotnet",
             Argument = "tool list --global",
-            OutputDataReceived = OnOutput,
+            OutputDataReceived = msg =>
+            {
+                if (msg.Contains("messagepack.generator"))
+                    isInstalled = true;
+                else
+                    OnError(msg, "MessagePack Generator Not Installed");
+            },
+            ErrorDataReceived = msg => OnError(msg),
         };
-
-        var isInstalled = false;
         await ProcessUtil.RunAsync(request);
         return isInstalled;
-
-        void OnOutput(string msg)
-        {
-            if (msg.Contains("messagepack.generator"))
-                isInstalled = true;
-        }
     }
 
     private static async UniTask InstallMpcAsync()
@@ -77,7 +100,8 @@ public abstract partial class MessagePackExtractor
         var request = new ProcessUtil.RequestInfo
         {
             Exec = "dotnet",
-            Argument = "tool install --global MessagePack.Generator"
+            Argument = "tool install --global MessagePack.Generator",
+            OutputDataReceived = msg => OnOutput(msg, "Install Mpc"),
         };
 
         await ProcessUtil.RunAsync(request);
@@ -109,6 +133,7 @@ public abstract partial class MessagePackExtractor
         {
             Exec = "mpc",
             Argument = $"-i {projectDir} -o {_projectGeneratedFilePath} -n com.haegin.Billionaire.Data -r BillionaireClient",
+            OutputDataReceived = msg => OnOutput(msg, "Run MPC"),
         };
 
         request.Print();
@@ -123,6 +148,7 @@ public abstract partial class MessagePackExtractor
             Exec = "dotnet",
             Argument = $"build -o {buildDir} --configuration Release",
             WorkingDirectory = workingDir,
+            OutputDataReceived = msg => OnOutput(msg, "Build C# Project"),
         };
         
         request.Print();
@@ -151,7 +177,7 @@ public abstract partial class MessagePackExtractor
             Exec = "dotnet",
             Argument = $"run  -o {buildDir} --configuration Release",
             WorkingDirectory = workingDir,
-            OutputDataReceived = msg => Logger.Instance.LogLine($"[Extract] {msg}"),
+            OutputDataReceived = msg => OnOutput(msg, "Extract"),
         };
         
         request.Print();
@@ -191,4 +217,22 @@ public abstract partial class MessagePackExtractor
         }
     }
 #endregion // Copy Output Files
+
+#region Log
+    private static void OnOutput(string msg, string tag = "")
+    {
+        if (string.IsNullOrWhiteSpace(msg))
+            return;
+
+        Logger.Instance.LogLine(string.IsNullOrWhiteSpace(tag) ? $"\n{msg}" : $"[{tag}]\n{msg}");
+    }
+
+    private static void OnError(string msg, string tag = "")
+    {
+        if (string.IsNullOrWhiteSpace(msg))
+            return;
+        
+        Logger.Instance.LogErrorLine(string.IsNullOrWhiteSpace(tag) ? $"\n{msg}" : $"[{tag}]\n{msg}");
+    }
+#endregion // Log
 }

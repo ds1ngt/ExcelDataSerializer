@@ -1,4 +1,10 @@
 # Changelog
+## [1.1.2] - 2024-12-12
+### Added
+- String 테이블 CSV Export 추가 (경로는 Script/Data)
+- Unity Localization에서 지원하는 CSV 형식에 맞춤
+- 파싱 대상, 규칙 등을 정의한 RunnerRules 추가
+
 ## [1.1.1] - 2024-11-08
 ### Fixed
 - 테이블 파싱 중 일부 테이블을 건너뛰는 버그 수정
