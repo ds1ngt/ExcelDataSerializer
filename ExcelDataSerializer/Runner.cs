@@ -14,6 +14,8 @@ public abstract class Runner
         XlsxHelper,
         ClosedXml
     }
+
+#region Execute
     public static void Execute(RunnerInfo info) => ExecuteAsync(info).Forget();
     public static async UniTask ExecuteAsync(RunnerInfo info)
     {
@@ -46,6 +48,9 @@ public abstract class Runner
         // 데이터 클래스 생성 (DataTable -> C#)
         var classInfos = await GenerateDataClassMessagePackAsync(info.CSharpOutputDir, dataTables);
         
+        // CSV 생성 (DataTable -> CSV)
+        await GenerateCsvAsync(info.CSharpOutputDir, dataTables);
+        
         // var classInfos = GenerateDataClassMemoryPack(info.OutputDir, dataTables);
         // GenerateDataClassRecord(info.CSharpOutputDir, info.DataOutputDir, dataTables);
 
@@ -59,7 +64,9 @@ public abstract class Runner
         // 엑셀파일에서 데이터 추출
         // AssemblyDataInjector.Test(dataTables, assemblyInfoMap);
     }
+#endregion // Execute
 
+#region Convert
     private static async UniTask<Dictionary<string, TableInfo.DataTable>> ExcelConvertAsync(RunnerInfo info)
     {
         var result = new Dictionary<string, TableInfo.DataTable>();
@@ -89,7 +96,11 @@ public abstract class Runner
 
         return result;
     }
-
+    private static ILoader GetLoader(ExcelLoaderType type) => type switch
+    {
+        // ExcelLoaderType.ClosedXml => new ClosedXmlLoader(),
+        _ => new XlsxHelperLoader()
+    };
     private static bool TryMergeEnumSheet(TableInfo.DataTable left, TableInfo.DataTable right, out TableInfo.DataTable merged)
     {
         merged = default!;
@@ -127,22 +138,23 @@ public abstract class Runner
         merged.Data = left.Data.Concat(dataCells).ToArray();
         return true;
     }
-    private static ILoader GetLoader(ExcelLoaderType type) => type switch
-    {
-        // ExcelLoaderType.ClosedXml => new ClosedXmlLoader(),
-        _ => new XlsxHelperLoader()
-    };
+#endregion // Convert
 
+#region Generate - MessagePack
     private static async UniTask<DataClassInfo[]> GenerateDataClassMessagePackAsync(string outputDir, Dictionary<string, TableInfo.DataTable> dataTables)
     {
         var result = new List<DataClassInfo>();
         result.Add(RecordGenerator.GenerateInterface()!.Value);
-
+        
         foreach (var kvp in dataTables)
         {
             var key = kvp.Key;
             var value = kvp.Value;
             var name = NamingRule.Check(key);
+            
+            if (!IsConvertMessagePack(name))
+                continue;
+            
             var saveFilePath = Path.Combine(outputDir, $"{name}DataTable.cs");
             var classInfo = MessagePackGenerator.GenerateDataClass(value);
             if (!classInfo.HasValue)
@@ -154,23 +166,49 @@ public abstract class Runner
 
         return result.ToArray();
     }
+#endregion // Generate - MessagePack
 
-    // private static DataClassInfo[] GenerateDataClassMemoryPack(string outputDir, Dictionary<string, TableInfo.DataTable> dataTables)
-    // {
-    //     var result = new List<DataClassInfo>();
-    //     foreach (var kvp in dataTables)
-    //     {
-    //         var key = kvp.Key;
-    //         var value = kvp.Value;
-    //         var saveFilePath = Path.Combine(outputDir, $"{key}Table.cs");
-    //         var classInfo = MemoryPackGenerator.GenerateDataClass(value);
-    //         result.Add(classInfo);
-    //         Util.Util.SaveToFileAsync(saveFilePath, classInfo.Code).Forget();
-    //     }
-    //
-    //     return result.ToArray();
-    // }
+#region Generate - CSV
+    private static async UniTask GenerateCsvAsync(string outputDir, Dictionary<string, TableInfo.DataTable> dataTables)
+    {
+        foreach (var kvp in dataTables)
+        {
+            var key = kvp.Key;
+            var value = kvp.Value;
+            var name = NamingRule.Check(key);
+            
+            if (!IsConvertCsv(name))
+                continue;
+            
+            var saveFilePath = Path.Combine(outputDir, $"{name}DataTable.csv");
 
+            var csvString = CsvGenerator.GenerateCsv(value);
+            if (string.IsNullOrWhiteSpace(csvString))
+                continue;
+            
+            await Util.Util.SaveToFileAsync(saveFilePath, csvString);
+        }
+    }
+#endregion // Generate - CSV
+
+#region RunnerRules
+    private static bool IsConvertMessagePack(string key)
+    {
+        if (!RunnerRules.SheetConvertRules.TryGetValue(key, out var rule))
+            return true;    // 기본값 : 변환을 함
+
+        return rule.UseMessagePack;
+    }
+
+    private static bool IsConvertCsv(string key)
+    {
+        if (!RunnerRules.SheetConvertRules.TryGetValue(key, out var rule))
+            return false;   // 기본값: 변환하지 않음
+
+        return rule.UseCsv;
+    }
+#endregion // RunnerRules
+#region Generate - DataClassRecord
     private static DataClassInfo[] GenerateDataClassRecord(string csOutputDir, string dataOutputDir, Dictionary<string, TableInfo.DataTable> dataTables)
     {
         var result = new List<DataClassInfo>();
@@ -204,4 +242,5 @@ public abstract class Runner
 
         return result.ToArray();
     }
+#endregion // Generate - DataClassRecord
 }
