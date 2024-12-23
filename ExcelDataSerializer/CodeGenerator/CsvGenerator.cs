@@ -13,9 +13,9 @@ public abstract class CsvGenerator
         AppendHeader(dataTable, sb, rule);
         AppendData(dataTable, sb, rule);
         
-        Console.WriteLine($"============================ CSV : {dataTable.Name} =============================");
-        Console.WriteLine(sb.ToString());
-        Console.WriteLine($"=================================================================================");
+        Console.WriteLine($"============================ CSV : {dataTable.Name} ({dataTable.Data.Length}) =============================");
+        // Console.WriteLine(sb.ToString());
+        // Console.WriteLine($"=================================================================================");
         return sb.ToString();
     }
 

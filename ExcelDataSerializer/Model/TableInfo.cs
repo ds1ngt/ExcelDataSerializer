@@ -200,7 +200,7 @@ public abstract class TableInfo
         public DataCell[] DataCells = Array.Empty<DataCell>();
     }
 
-    public record SchemaCell
+    public record SchemaCell : IComparable<SchemaCell>
     {
         public string Name;
         public int Index;
@@ -210,6 +210,19 @@ public abstract class TableInfo
         public string GetTypeStr()
         {
             return string.Empty;
+        }
+
+        public int CompareTo(SchemaCell? other)
+        {
+            if (ReferenceEquals(this, other)) return 0;
+            if (other is null) return 1;
+            var nameComparison = string.Compare(Name, other.Name, StringComparison.Ordinal);
+            if (nameComparison != 0) return nameComparison;
+            var indexComparison = Index.CompareTo(other.Index);
+            if (indexComparison != 0) return indexComparison;
+            var schemaTypesComparison = SchemaTypes.CompareTo(other.SchemaTypes);
+            if (schemaTypesComparison != 0) return schemaTypesComparison;
+            return string.Compare(ValueType, other.ValueType, StringComparison.Ordinal);
         }
     }
     public record DataCell
