@@ -35,5 +35,10 @@ public record StringTableRule : AdditionalRule
         {"KO", "Korean(ko)"},
         {"EN", "English(en)"},
         {"AR", "Arabic(ar)"},
+        {"ES", "Spanish(es)"},
+        {"FR", "French(fr)"},
+        {"JA", "Japanese(ja)"},
+        {"JP", "Japanese(ja)"},
+        {"ZH-Hans", "Chinese (Simplified)"},
     };
 }

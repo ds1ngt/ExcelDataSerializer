@@ -89,6 +89,12 @@ public abstract class Runner
                     if (TryMergeEnumSheet(enumTable, table, out var merged))
                         result[table.Name] = merged;
                 }
+                else if (IsStringTable(table.Name))
+                {
+                    var stringTable = result[table.Name];
+                    if (TryMergeStringSheet(stringTable, table, out var merged))
+                        result[table.Name] = merged;
+                }
                 else
                     Logger.Instance.LogLine($"ExcelConvert : 이름 중복!!! {filePath} : {table.Name}");
             }
@@ -96,6 +102,7 @@ public abstract class Runner
 
         return result;
     }
+    private static bool IsStringTable(string tableName) => tableName.StartsWith(Constant.String);
     private static ILoader GetLoader(ExcelLoaderType type) => type switch
     {
         // ExcelLoaderType.ClosedXml => new ClosedXmlLoader(),
@@ -137,6 +144,55 @@ public abstract class Runner
             });
         merged.Data = left.Data.Concat(dataCells).ToArray();
         return true;
+    }
+
+    private static bool TryMergeStringSheet(TableInfo.DataTable left, TableInfo.DataTable right, out TableInfo.DataTable merged)
+    {
+        merged = default!;
+        
+        if (left.Header == null || right.Header == null)
+            return false;
+
+        if (!ValidateSchema())
+            return false;
+
+        merged = new TableInfo.DataTable
+        {
+            Name = left.Name,
+            TableType = left.TableType,
+            Header = left.Header
+        };
+
+        var lastIndex = left.Header.SchemaCells
+            .Select(cell => cell.Index)
+            .Max(idx => idx) + 1;
+
+        var dataCells = right.Data
+            .Select(row =>
+            {
+                foreach (var t in row.DataCells)
+                    t.Index += lastIndex;
+                return row;
+            });
+        merged.Data = left.Data.Concat(dataCells).ToArray();
+        Logger.Instance.LogLine($"Merge String Sheet {left.Data.Length} + {right.Data.Length} = {merged.Data.Length}");
+        return true;
+
+        bool ValidateSchema()
+        {
+            var leftLen = left.Header.SchemaCells.Count;
+            var rightLen = right.Header.SchemaCells.Count;
+            if (leftLen != rightLen)
+                return false;
+
+            for (var i = 0; i < leftLen; ++i)
+            {
+                if (left.Header.SchemaCells[i].CompareTo(right.Header.SchemaCells[i]) != 0)
+                    return false;
+            }
+
+            return true;
+        }
     }
 #endregion // Convert
 
