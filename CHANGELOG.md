@@ -1,4 +1,9 @@
 # Changelog
+## [1.1.3] - 2024-12-23
+### Added
+- String 테이블 Merge 추가 (동일한 String 테이블에 한해서 병합 시도)
+- String 테이블 내의 컬럼의 이름 및 순서가 동일해야함.
+
 ## [1.1.2] - 2024-12-12
 ### Added
 - String 테이블 CSV Export 추가 (경로는 Script/Data)
