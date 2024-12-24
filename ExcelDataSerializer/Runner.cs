@@ -159,23 +159,13 @@ public abstract class Runner
         merged = new TableInfo.DataTable
         {
             Name = left.Name,
+            ClassName = left.ClassName,
             TableType = left.TableType,
             Header = left.Header
         };
 
-        var lastIndex = left.Header.SchemaCells
-            .Select(cell => cell.Index)
-            .Max(idx => idx) + 1;
-
-        var dataCells = right.Data
-            .Select(row =>
-            {
-                foreach (var t in row.DataCells)
-                    t.Index += lastIndex;
-                return row;
-            });
+        var dataCells = right.Data;
         merged.Data = left.Data.Concat(dataCells).ToArray();
-        Logger.Instance.LogLine($"Merge String Sheet {left.Data.Length} + {right.Data.Length} = {merged.Data.Length}");
         return true;
 
         bool ValidateSchema()
