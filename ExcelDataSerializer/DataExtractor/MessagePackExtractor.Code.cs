@@ -590,38 +590,32 @@ class Extractor
         {{
             case Types.Byte:
             {{
-                byte.TryParse(strValue, out var value);
-                return value;
+                return ParseByte(strValue);
             }}
             case Types.Short:
             case Types.Int16:
             {{
-                short.TryParse(strValue, out var value);
-                return value;
+                return ParseShort(strValue);
             }}
             case Types.UShort:
             case Types.UInt16:
             {{
-                ushort.TryParse(strValue, out var value);
-                return value;
+                return ParseUshort(strValue);
             }}
             case Types.Int:
             case Types.Int32:
             {{
-                int.TryParse(strValue, out var value);
-                return value;
+                return ParseInt(strValue);
             }}
             case Types.UInt:
             case Types.UInt32:
             {{
-                uint.TryParse(strValue, out var value);
-                return value;
+                return ParseUInt(strValue);
             }}
             case Types.Long:
             case Types.Int64:
             {{
-                long.TryParse(strValue, out var value);
-                return value;
+                return ParseULong(strValue);
             }}
             case Types.ULong:
             case Types.UInt64:
@@ -632,24 +626,20 @@ class Extractor
             case Types.Float:
             case Types.Single:
             {{
-                float.TryParse(strValue, out var value);
-                return value;
+                return ParseFloat(strValue);
             }}
             case Types.Double:
             {{
-                double.TryParse(strValue, out var value);
-                return value;
+                return ParseDouble(strValue);
             }}
             case Types.Decimal:
             {{
-                decimal.TryParse(strValue, out var value);
-                return value;
+                return ParseDecimal(strValue);
             }}
             case Types.Bool:
             case Types.Boolean:
             {{
-                bool.TryParse(strValue, out var value);
-                return value;
+                return ParseBool(strValue);
             }}
             case Types.String:
             {{
