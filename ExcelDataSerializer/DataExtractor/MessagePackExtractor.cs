@@ -8,7 +8,7 @@ namespace ExcelDataSerializer.DataExtractor;
 public abstract partial class MessagePackExtractor
 {
 #region Fields
-    private const string PROJECT_DIR = "BillionaireClient";
+    private const string PROJECT_DIR = "Client";
     private const string BUILD_DIR = "Build";
     private const string DATA_DIR = "Data";
     private const string MESSAGEPACK_GENERATED_FILE = "MessagePackGenerated.cs";
@@ -132,7 +132,7 @@ public abstract partial class MessagePackExtractor
         var request = new ProcessUtil.RequestInfo
         {
             Exec = "mpc",
-            Argument = $"-i {projectDir} -o {_projectGeneratedFilePath} -n com.haegin.Billionaire.Data -r BillionaireClient",
+            Argument = $"-i {projectDir} -o {_projectGeneratedFilePath} -n {Constant.DATA_NAMESPACE} -r {Constant.MPC_CLIENT}",
             OutputDataReceived = msg => OnOutput(msg, "Run MPC"),
         };
 

@@ -1,6 +1,7 @@
 ﻿using System.CodeDom;
 using System.CodeDom.Compiler;
 using System.Text;
+using ExcelDataSerializer.Model;
 
 namespace ExcelDataSerializer.CodeGenerator;
 
@@ -17,7 +18,7 @@ public partial class CodeBuilder : IDisposable
         _namespace.Imports.Add(new CodeNamespaceImport("System"));
         _namespace.Imports.Add(new CodeNamespaceImport("System.Collections.Generic"));
     }
-    public static CodeBuilder NewBuilder(string ns = "com.haegin.billionaire.Data")
+    public static CodeBuilder NewBuilder(string ns = Constant.DATA_NAMESPACE)
     {
         var builder = new CodeBuilder(ns);
         return builder;

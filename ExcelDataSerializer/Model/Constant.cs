@@ -12,8 +12,10 @@ public abstract class Constant
 
     public static readonly string String = "String";
 
-    public const string DATA_NAMESPACE = "com.haegin.Billionaire.Data";
+    public const string DATA_NAMESPACE = "com.ExcelData";
     public const string DATA_SUFFIX = "Data";
     public const string DATA_TABLE_SUFFIX = "DataTable";
     public const string INTERFACE_NAME = "ITableData";
+
+    public const string MPC_CLIENT = "Client";
 }
