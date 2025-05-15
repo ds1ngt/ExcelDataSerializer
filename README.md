@@ -10,6 +10,10 @@ Excel데이터를 런타임 환경에서 사용할 수 있는 형태로 가공�
 - 코드 생성: CodeDOM
 - 데이터 직렬화: MessagePack
 - GUI: Avalonia
+## 다운로드
+Windows 빌드 및 샘플 데이터 [다운로드](
+https://github.com/ds1ngt/ExcelDataSerializer/releases/tag/1.0.2)
 ## 배포
+
 ### Mac 버전 배포
 - `publish.sh` 스크립트 실행하면 Publish 폴더 내에 배포용 빌드 생성
